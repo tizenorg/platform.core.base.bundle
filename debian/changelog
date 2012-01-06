@@ -1,0 +1,7 @@
+bundle (0.1.21) unstable; urgency=low
+
+  * Initial release.
+  * Git: pkgs/b/bundle
+  * Tag: bundle_0.1.21
+
+ -- Sewook Park <sewook7.park@samsung.com>  Wed, 07 Dec 2011 12:55:49 +0900
