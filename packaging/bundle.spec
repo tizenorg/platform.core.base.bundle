@@ -1,4 +1,3 @@
-
 Name:       bundle
 Summary:    String key-val dictionary ADT
 Version:    0.1.16
@@ -10,6 +9,7 @@ Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 BuildRequires:  cmake
 BuildRequires:  pkgconfig(glib-2.0)
+BuildRequires:  pkgconfig(dlog)
 
 
 %description
@@ -52,13 +52,10 @@ rm -rf %{buildroot}
 
 
 %files
-%defattr(-,root,root,-)
-%doc COPYING
 %{_libdir}/libbundle.so.*
 
 
 %files devel
-%defattr(-,root,root,-)
 %{_includedir}/bundle.h
 %{_includedir}/SLP_bundle_PG.h
 %{_libdir}/pkgconfig/bundle.pc
