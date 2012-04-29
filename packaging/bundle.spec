@@ -1,9 +1,9 @@
 Name:       bundle
 Summary:    String key-val dictionary ADT
-Version:    0.1.16
-Release:    1.1
-Group:      TO_BE/FILLED_IN
-License:    TO BE FILLED IN
+Version:    0.1.22
+Release:    1
+Group:      System/Libraries
+License:    Apache License, Version 2.0
 Source0:    bundle-%{version}.tar.bz2
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig

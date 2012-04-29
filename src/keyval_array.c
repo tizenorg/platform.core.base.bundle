@@ -51,9 +51,9 @@ keyval_array_new(keyval_array_t *kva, const char *key, const int type, const voi
 	int must_free_obj;
 	must_free_obj = kva ? 0 : 1;
 
-	if(!kva) {	
+	if(!kva) {
 		kva = calloc(1, sizeof(keyval_array_t));
-		if(!kva) {
+		if(unlikely(NULL==kva)) {
 			errno = ENOMEM;
 			return NULL;
 		}
@@ -61,6 +61,12 @@ keyval_array_new(keyval_array_t *kva, const char *key, const int type, const voi
 
 	// keyval setting
 	keyval_t *kv = keyval_new((keyval_t *)kva, key, type, NULL, 0);
+	if(unlikely(NULL==kv))
+	{
+			errno = ENOMEM;
+			return NULL;
+	}
+
 	kv->type = kv->type | BUNDLE_TYPE_ARRAY;
 
 	kva->len = len;
@@ -85,14 +91,14 @@ keyval_array_new(keyval_array_t *kva, const char *key, const int type, const voi
 		return NULL;
 	}
 	// If avaliable, copy array val
-	if(array_val 
-		&& keyval_type_is_measurable(type) 
-		&& keyval_type_get_measure_size_func(type)) {	
+	if(array_val
+		&& keyval_type_is_measurable(type)
+		&& keyval_type_get_measure_size_func(type)) {
 		// array_val have original data array. copy it!
 
-		if(keyval_array_copy_array((keyval_array_t*)kv, 
-					(void**)array_val, 
-					len, 
+		if(keyval_array_copy_array((keyval_array_t*)kv,
+					(void**)array_val,
+					len,
 					keyval_type_get_measure_size_func(type))
 				) {
 			keyval_array_free(kva, 1);

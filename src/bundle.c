@@ -31,13 +31,14 @@
 #include "keyval_array.h"
 #include "keyval_type.h"
 #include "bundle_log.h"
-#include <glib/gbase64.h>
+#include <glib.h>
 
 #include <stdlib.h>		/* calloc, free */
 #include <string.h>		/* strdup */
 #include <errno.h>
 
-
+#define CHECKSUM_LENGTH 32
+#define TAG_IMPORT_EXPORT_CHECK "`zaybxcwdveuftgsh`"
 /* ADT */
 struct _bundle_t
 {
@@ -390,6 +391,11 @@ int
 bundle_encode(bundle *b, bundle_raw **r, int *len)
 {
 	keyval_t *kv;
+	unsigned char *m;
+	unsigned char *p_m;
+	unsigned char *byte;
+	size_t byte_len;
+	gchar *chksum_val;
 
 	if(NULL == b) {
 		errno = EINVAL;
@@ -404,13 +410,10 @@ bundle_encode(bundle *b, bundle_raw **r, int *len)
 		msize += kv->method->get_encoded_size(kv);
 		kv = kv->next;
 	}
-	unsigned char *m = calloc(msize, sizeof(unsigned char));
-	if ( NULL == m )  { errno = ENOMEM; return -1; }
+	m = calloc(msize+CHECKSUM_LENGTH, sizeof(unsigned char));
+	if(unlikely(NULL == m ))  { errno = ENOMEM; return -1; }
 
-	unsigned char *p_m = m;	/* temporary pointer */
-
-	unsigned char *byte;
-	size_t byte_len;
+	p_m = m+CHECKSUM_LENGTH;	/* temporary pointer */
 
 	kv = b->kv_head;
 	while(kv != NULL) {
@@ -426,11 +429,17 @@ bundle_encode(bundle *b, bundle_raw **r, int *len)
 		free(byte);
 	}
 
+	/*compute checksum from the data*/
+	chksum_val = g_compute_checksum_for_string(G_CHECKSUM_MD5,m+CHECKSUM_LENGTH,msize);
+	/*prefix checksum to the data */
+	memcpy(m,chksum_val,CHECKSUM_LENGTH);
 	if ( NULL != r ) {
-		*r =(unsigned char*)g_base64_encode(m, msize);
+		/*base64 encode for whole string checksum and data*/
+		*r =(unsigned char*)g_base64_encode(m,msize+CHECKSUM_LENGTH);
 		if ( NULL != len ) *len = strlen((char*)*r);
 	}
 	free(m);
+	g_free(chksum_val);/*free checksum string */
 
 	return 0;
 }
@@ -450,15 +459,40 @@ bundle_decode(const bundle_raw *r, const int data_size)
 {
 	bundle *b;
 	bundle_raw *p_r;
+	unsigned char *d_str;
+	unsigned int d_len_raw;
+	unsigned char *d_r;
+	unsigned int d_len;
+	char *extract_cksum;
+	gchar* compute_cksum;
 
 	if(NULL == r) {
 		errno = EINVAL;
 		return NULL;
 	}
 
-	unsigned char *d_r;
-	unsigned int d_len;
-	d_r = g_base64_decode((char*)r, &d_len);
+	extract_cksum = calloc(CHECKSUM_LENGTH+1, sizeof(char));
+	if(unlikely(NULL== extract_cksum))
+	{
+		errno = ENOMEM;
+		return NULL;
+	}
+
+	/* base 64 decode of input string*/
+	d_str = g_base64_decode((char*)r, &d_len_raw);
+	/*extract checksum from the received string */
+	strncpy(extract_cksum,d_str,CHECKSUM_LENGTH);
+	/* compute checksum for the data */
+	compute_cksum = g_compute_checksum_for_string(G_CHECKSUM_MD5,d_str+CHECKSUM_LENGTH,d_len_raw-CHECKSUM_LENGTH);
+	/*compare checksum values- extracted from the received string and computed from the data */
+	if(strcmp(extract_cksum,compute_cksum)!=0)
+	{
+		free(extract_cksum);
+		g_free(compute_cksum);
+		return NULL;
+	}
+	d_r = d_str+CHECKSUM_LENGTH;
+	d_len= d_len_raw-CHECKSUM_LENGTH;
 
 	/* re-construct bundle */
 	b = bundle_create();
@@ -472,7 +506,7 @@ bundle_decode(const bundle_raw *r, const int data_size)
 		kv = NULL;	// To get a new kv
 
 		// Find type, and use decode function according to type
-		int type = keyval_get_type_from_encoded_byte(p_r);	
+		int type = keyval_get_type_from_encoded_byte(p_r);
 
 		if(keyval_type_is_array(type)) {
 			bytes_read = keyval_array_decode(p_r, (keyval_array_t **) &kv);
@@ -486,9 +520,11 @@ bundle_decode(const bundle_raw *r, const int data_size)
 		p_r += bytes_read;
 	}
 
-	free(d_r);
+	free(extract_cksum);
+	g_free(compute_cksum);
+	free(d_str);
 
-	return b; 
+	return b;
 }
 
 struct _argv_idx {
@@ -541,7 +577,7 @@ bundle_export_to_argv(bundle *b, char ***argv)
 	vi.argc = argc;
 	vi.argv = *argv;
 	vi.idx = 2; 			 /* start from index 2*/
-	vi.argv[1]="`zaybxcwdveuftgsh`"; 		/* set argv[1] as encoded*/
+	vi.argv[1]=TAG_IMPORT_EXPORT_CHECK; 		/* set argv[1] as encoded*/
 	/*BUNDLE_LOG_PRINT("\nargument 1 is %s",vi.argv[1]);*/
 
 	bundle_foreach(b, _iter_export_to_argv, &vi);
@@ -579,7 +615,7 @@ bundle_import_from_argv(int argc, char **argv)
 	}
 	*/
 
-	if(!argv[1]||strcmp(argv[1],"`zaybxcwdveuftgsh`"))
+	if(!argv[1]||strcmp(argv[1],TAG_IMPORT_EXPORT_CHECK))
 	{
 	/*BUNDLE_LOG_PRINT("\nit is not encoded");*/
 		int idx;

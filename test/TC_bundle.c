@@ -1061,11 +1061,11 @@ int TC_bundle_decode()
 	dec_b=bundle_decode(bundle_data,len);
 	assert(NULL == dec_b);
 	assert(EINVAL == errno);
-/*TODO:invalid bundle_data and len values- not encoded-any random string passed -sigsegv */
-//	dec_b=bundle_decode("not_encodeddata",len);
-//	assert(NULL == dec_b);
+/*invalid bundle_data and len values- not encoded-any random string passed -FIXED */
+	dec_b=bundle_decode("not_encodeddata",len);
+	assert(NULL == dec_b);
 //	assert(EINVAL == errno);
-/*encode- decode but incorrect value for length  TODO:it should fail but succeeding*/
+/*encode- decode but incorrect value for length  */
 	b=bundle_create();
 	assert(NULL != b);
 	assert(0 == bundle_add(b, "k1", "val1"));

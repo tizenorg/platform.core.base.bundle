@@ -54,7 +54,8 @@ extern "C" {
 # endif
 
 #define API 	__attribute__((visibility("default")))
-
+#define likely(x) __builtin_expect(x,1)
+#define unlikely(x) __builtin_expect(x,0)
 
 /**
  * bundle is an opaque type pointing a bundle object
