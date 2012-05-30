@@ -5,6 +5,7 @@ Release:    1
 Group:      System/Libraries
 License:    Apache License, Version 2.0
 Source0:    bundle-%{version}.tar.bz2
+Source1001: packaging/bundle.manifest 
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 BuildRequires:  cmake
@@ -31,6 +32,7 @@ Simple string key-val dictionary ADT (devel)
 
 
 %build
+cp %{SOURCE1001} .
 cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix}
 
 
@@ -52,10 +54,12 @@ rm -rf %{buildroot}
 
 
 %files
+%manifest bundle.manifest
 %{_libdir}/libbundle.so.*
 
 
 %files devel
+%manifest bundle.manifest
 %{_includedir}/bundle.h
 %{_includedir}/SLP_bundle_PG.h
 %{_libdir}/pkgconfig/bundle.pc
