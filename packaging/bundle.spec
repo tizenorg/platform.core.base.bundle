@@ -2,9 +2,9 @@ Name:       bundle
 Summary:    String key-val dictionary ADT
 Version:    0.1.22
 Release:    1
-Group:      System/Libraries
+Group:      Application Framework/Settings
 License:    Apache License, Version 2.0
-Source0:    bundle-%{version}.tar.bz2
+Source0:    %{name}-%{version}.tar.bz2
 Source1001: packaging/bundle.manifest 
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
@@ -28,7 +28,7 @@ Simple string key-val dictionary ADT (devel)
 
 
 %prep
-%setup -q -n %{name}-%{version}
+%setup -q
 
 
 %build
