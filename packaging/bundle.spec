@@ -1,10 +1,11 @@
+
 Name:       bundle
 Summary:    String key-val dictionary ADT
 Version:    0.1.22
 Release:    1
 Group:      System/Libraries
 License:    Apache License, Version 2.0
-Source0:    bundle-%{version}.tar.bz2
+Source0:    bundle-%{version}.tar.gz
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 BuildRequires:  cmake
@@ -52,10 +53,12 @@ rm -rf %{buildroot}
 
 
 %files
+%defattr(-,root,root,-)
 %{_libdir}/libbundle.so.*
 
 
 %files devel
+%defattr(-,root,root,-)
 %{_includedir}/bundle.h
 %{_includedir}/SLP_bundle_PG.h
 %{_libdir}/pkgconfig/bundle.pc
