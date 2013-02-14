@@ -1,0 +1,24 @@
+Source: bundle
+Section: devel
+Priority: extra
+Maintainer: Garima <garima.s@samsung.com>, Jayoun Lee <airjany@samsung.com>, Sewook Park <sewook7.park@samsung.com>, Jaeho Lee <jaeho81.lee@samsung.com>
+Build-Depends: debhelper (>= 4.0.0), libglib2.0-dev, dlog-dev
+Standards-Version: 0.1.0
+
+Package: libbundle-0
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Simple string key-val dictionary ADT
+
+Package: libbundle-dev
+Architecture: any
+Depends: libbundle-0 (= ${Source-Version})
+Description: Dev package for libbundle-0
+XB-Generate-Docs: yes
+
+Package: libbundle-dbg
+Section: debug
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libbundle-0 (= ${Source-Version})
+Description: Debug symbols for libbundle-0
+

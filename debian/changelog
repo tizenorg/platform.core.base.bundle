@@ -1,0 +1,239 @@
+bundle (0.1.22) unstable; urgency=low
+
+  * Checksum added to encode/decode to enhance stability and svace defects fixed.
+  * Git: 165.213.180.234:slp/pkgs/b/bundle
+  * Tag: bundle_0.1.22
+
+ -- Jaeho Lee <jaeho81.lee@samsung.com>  Fri, 17 Feb 2012 16:45:12 +0900
+
+bundle (0.1.21) unstable; urgency=low
+
+  * Updated changelog
+  * Git: 165.213.180.234:slp/pkgs/b/bundle
+  * Tag: bundle_0.1.21
+
+ -- Sewook Park <sewook7.park@samsung.com>  Mon, 05 Dec 2011 15:58:05 +0900
+
+bundle (0.1.20) unstable; urgency=low
+
+  * Changed Boilerplate as per the guideline
+  * Git: 165.213.180.234:slp/pkgs/b/bundle
+  * Tag: bundle_0.1.20 
+
+ -- Jaeho Lee <jaeho81.lee@samsung.com>  Mon, 07 Nov 2011 09:57:20 +0900
+
+bundle (0.1.19) unstable; urgency=low
+
+  * Support array
+  * Git: 165.213.180.234:slp/pkgs/b/bundle
+  * Tag: bundle_0.1.19 
+
+ -- Jaeho Lee <jaeho81.lee@samsung.com>  Thu, 06 Oct 2011 14:53:57 +0900
+
+bundle (0.1.18) unstable; urgency=low
+
+  * Modify TC Makefile
+  * Git: 165.213.180.234:slp/pkgs/b/bundle
+  * Tag: bundle_0.1.18 
+
+ -- Jaeho Lee <jaeho81.lee@samsung.com>  Tue, 16 Aug 2011 14:53:16 +0900
+
+bundle (0.1.17) unstable; urgency=low
+
+  * Fix Apply code cleanup
+  * Git: 165.213.180.234:slp/pkgs/b/bundle
+  * Tag: bundle_0.1.17
+
+ -- Sewook Park <sewook7.park@samsung.com>  Tue, 02 Aug 2011 19:11:59 +0900
+
+bundle (0.1.16) unstable; urgency=low
+
+  * Fix Boilerplate module name
+  * Git: 165.213.180.234:slp/pkgs/b/bundle
+  * Tag: bundle_0.1.16
+
+ -- Sewook Park <sewook7.park@samsung.com>  Sat, 16 Jul 2011 13:33:11 +0900
+
+bundle (0.1.15) unstable; urgency=low
+
+  * Apply Boilerplate
+  * Git: 165.213.180.234:slp/pkgs/b/bundle
+  * Tag: bundle_0.1.15
+
+ -- Sewook Park <sewook7.park@samsung.com>  Wed, 13 Jul 2011 17:36:38 +0900
+
+bundle (0.1.14) unstable; urgency=low
+
+  * Rollback to bundle_0.1.12
+  * Git: 165.213.180.234:slp/pkgs/b/bundle
+  * Tag: bundle_0.1.14
+
+ -- Sewook Park <sewook7.park@samsung.com>  Thu, 07 Jul 2011 15:25:40 +0900
+
+bundle (0.1.13) unstable; urgency=low
+
+  * Check ENOMEM when adding a value in a bundle
+  * Git: 165.213.180.234:slp/pkgs/b/bundle
+  * Tag: bundle_0.1.13
+
+ -- Youmin Ha <youmin.ha@samsung.com>  Thu, 21 Apr 2011 10:52:49 +0900
+
+bundle (0.1.12) unstable; urgency=low
+
+  * Add bundle_export_to_argv(), bundle_import_from-argv()
+  * Git: 165.213.180.234:slp/pkgs/b/bundle
+  * Tag: bundle_0.1.12
+
+ -- Youmin Ha <youmin.ha@samsung.com>  Mon, 28 Feb 2011 09:33:57 +0900
+
+bundle (0.1.11-3) unstable; urgency=low
+
+  * reupload
+  * Git: 165.213.180.234:slp/pkgs/b/bundle
+  * Tag: bundle_0.1.11-3
+
+ -- Youmin Ha <youmin.ha@samsung.com>  Wed, 19 Jan 2011 11:13:57 +0900
+
+bundle (0.1.11-2) unstable; urgency=low
+
+  * fix git path
+  * Git: 165.213.180.234:slp/pkgs/b/bundle
+  * Tag: bundle_0.1.11-2
+
+ -- Youmin Ha <youmin.ha@samsung.com>  Wed, 19 Jan 2011 10:38:28 +0900
+
+bundle (0.1.11-1) unstable; urgency=low
+
+  * add {0, NULL} as last item to the tclist
+  * Git: 165.213.180.234:/git/slp/pkgs/bundle
+  * Tag: bundle_0.1.11-1
+
+ -- Youmin Ha <youmin.ha@samsung.com>  Wed, 19 Jan 2011 08:36:04 +0900
+
+bundle (0.1.11) unstable; urgency=low
+
+  * remove garbages from src pkg
+  * Git: 165.213.180.234:/git/slp/pkgs/bundle
+  * Tag: bundle_0.1.11
+
+ -- Youmin Ha <youmin.ha@samsung.com>  Wed, 24 Nov 2010 17:48:57 +0900
+
+bundle (0.1.10-1) unstable; urgency=low
+
+  * Add doxygen
+  * Git: 165.213.180.234:/git/slp/pkgs/bundle
+  * Tag: bundle_0.1.10-1
+
+ -- Youmin Ha <youmin.ha@samsung.com>  Fri, 05 Nov 2010 14:13:58 +0900
+
+bundle (0.1.10) unstable; urgency=low
+
+  * Add doxygen 
+  * Git: 165.213.180.234:/git/slp/pkgs/bundle
+  * Tag: bundle_0.1.10
+
+ -- Youmin Ha <youmin.ha@samsung.com>  Tue, 02 Nov 2010 16:57:33 +0900
+
+bundle (0.1.9) unstable; urgency=low
+
+  * Apply SOVERSION + VERSION automatically
+  * Git: 165.213.180.234:/git/slp/pkgs/bundle
+  * Tag: bundle_0.1.9
+
+ -- Youmin Ha <youmin.ha@samsung.com>  Wed, 20 Oct 2010 19:24:28 +0900
+
+bundle (0.1.8-3) unstable; urgency=low
+
+  * Fix doxygen
+  * Git: 165.213.180.234:/git/slp/pkgs/bundle
+  * Tag: bundle_0.1.8-3
+
+ -- Youmin Ha <youmin.ha@samsung.com>  Mon, 18 Oct 2010 19:58:08 +0900
+
+bundle (0.1.8-2) unstable; urgency=low
+
+  * Fix doxygen
+  * Git: 165.213.180.234:/git/slp/pkgs/bundle
+  * Tag: bundle_0.1.8-2
+
+ -- Youmin Ha <youmin.ha@samsung.com>  Mon, 18 Oct 2010 11:05:06 +0900
+
+bundle (0.1.8-1) unstable; urgency=low
+
+  * Add libglib2.0-dev to build-dep 
+  * Git: 165.213.180.234:/git/slp/pkgs/bundle
+  * Tag: bundle_0.1.8-1
+
+ -- Youmin Ha <youmin.ha@samsung.com>  Sat, 18 Sep 2010 17:16:52 +0900
+
+bundle (0.1.8) unstable; urgency=low
+
+  * Use base64 encoding/decoding with bundle_encode(), bundle_decode()
+  * Git: 165.213.180.234:/git/slp/pkgs/bundle
+  * Tag: bundle_0.1.8
+
+ -- Youmin Ha <youmin.ha@samsung.com>  Sat, 18 Sep 2010 16:47:29 +0900
+
+bundle (0.1.7) unstable; urgency=low
+
+  * add TC
+  * Git: 165.213.180.234:/git/slp/pkgs/bundle
+  * Tag: bundle_0.1.7
+
+ -- Youmin Ha <youmin.ha@samsung.com>  Wed, 08 Sep 2010 17:22:15 +0900
+
+bundle (0.1.6) unstable; urgency=low
+
+  * Include PG into dev package
+  * Git: 165.213.180.234:/git/slp/pkgs/bundle
+  * Tag: bundle_0.1.6
+
+ -- Youmin Ha <youmin.ha@samsung.com>  Fri, 27 Aug 2010 15:26:31 +0900
+
+bundle (0.1.5) unstable; urgency=low
+
+  * add programming guide into doxygen
+  * Git: 165.213.180.234:/git/slp/pkgs/bundle
+  * Tag: bundle_0.1.5
+
+ -- Youmin Ha <youmin.ha@samsung.com>  Tue, 24 Aug 2010 19:04:10 +0900
+
+bundle (0.1.4) unstable; urgency=low
+
+  * add bundle_dup() function
+  * Git: 165.213.180.234:/git/slp/pkgs/bundle
+  * Tag: bundle_0.1.4
+
+ -- Youmin Ha <youmin.ha@samsung.com>  Tue, 27 Jul 2010 14:04:52 +0900
+
+bundle (0.1.3) unstable; urgency=low
+
+  * add bundle_del() function, and many tests for wrong uses
+  * Git: 165.213.180.234:/git/slp/pkgs/bundle
+  * Tag: bundle_0.1.3
+
+ -- Youmin Ha <youmin.ha@samsung.com>  Fri, 23 Jul 2010 11:21:32 +0900
+
+bundle (0.1.2) unstable; urgency=low
+
+  * Create libbundle.so.0 and its symlink libbundle.so
+  * Git: 165.213.180.234:/git/slp/pkgs/bundle
+  * Tag: bundle_0.1.2
+
+ -- Youmin Ha <youmin.ha@samsung.com>  Thu, 22 Jul 2010 11:22:13 +0900
+
+bundle (0.1.1) unstable; urgency=low
+
+  * Fix CMakeList.txt : add @ONLY option to the command generating pc file
+  * Git: 165.213.180.234:/git/slp/pkgs/bundle
+  * Tag: bundle_0.1.1
+
+ -- Youmin Ha <youmin.ha@samsung.com>  Thu, 22 Jul 2010 09:49:54 +0900
+
+bundle (0.1.0) unstable; urgency=low
+
+  * Initial release.
+  * Git: 165.213.180.234:/git/slp/pkgs/bundle
+  * Tag: bundle_0.1.0
+
+ -- Youmin Ha <youmin.ha@samsung.com>  Wed, 21 Jul 2010 17:04:19 +0900
