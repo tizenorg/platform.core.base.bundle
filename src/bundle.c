@@ -326,6 +326,12 @@ bundle_keyval_type_is_array(bundle_keyval_t *kv)
 }
 
 int 
+bundle_keyval_type_is_measurable(bundle_keyval_t *kv)
+{
+	return keyval_type_is_measurable(kv->type);
+}
+
+int 
 bundle_keyval_get_basic_val(bundle_keyval_t *kv, void **val, size_t *size)
 {
 	return keyval_get_data(kv, NULL, val, size);
@@ -693,38 +699,38 @@ bundle_get_array_val_size(bundle *b, const char *key, const void *val_ptr)
 {
 	return 0;
 }
-/*static int
-  bundle_set_array_val(bundle *b, const char *key, const int type, const unsigned int idx, const void *val, const size_t size)
-  {
+static int
+bundle_set_array_val(bundle *b, const char *key, const int type, const unsigned int idx, const void *val, const size_t size)
+{
 //void **array = NULL;
 
-keyval_t *kv = _bundle_find_kv(b, key);
-if(NULL == kv) return -1;
+	keyval_t *kv = _bundle_find_kv(b, key);
+	if(NULL == kv) return -1;
 
-if(type != kv->type) {
-errno = EINVAL;
-return -1;
+	if(type != kv->type) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	if(! keyval_type_is_array(kv->type)) {	// TODO: Is this needed?
+		errno = EINVAL;
+		return -1;
+	}
+
+	keyval_array_t *kva = (keyval_array_t *)kv;
+
+	if(! keyval_array_is_idx_valid(kva, idx)) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	if(!kva->array_val) {	// NULL value test (TODO: is this needed?)
+		errno = ENOMEM;
+		return -1;
+	}
+
+	return keyval_array_set_element(kva, idx, val, size);
 }
-
-if(! keyval_type_is_array(kv->type)) {	// TODO: Is this needed?
-errno = EINVAL;
-return -1;
-}
-
-keyval_array_t *kva = (keyval_array_t *)kv;
-
-if(! keyval_array_is_idx_valid(kva, idx)) {
-errno = EINVAL;
-return -1;
-}
-
-if(!kva->array_val) {	// NULL value test (TODO: is this needed?)
-errno = ENOMEM;
-return -1;
-}
-
-return keyval_array_set_element(kva, idx, val, size);
-}*/
 
 
 	int
@@ -771,7 +777,6 @@ bundle_compare(bundle *b1, bundle *b2)
 
 
 
-#if 0
 	int
 bundle_set_str_array_element(bundle *b, const char *key, const unsigned int idx, const char *val)
 {
@@ -814,6 +819,4 @@ bundle_set_byte_array_element(bundle *b, const char *key, const unsigned int idx
 {
 	return bundle_set_array_val(b, key, BUNDLE_TYPE_BYTE_ARRAY, idx, val, size);
 }
-
-#endif
 

@@ -1,22 +1,15 @@
-
 Name:       bundle
 Summary:    String key-val dictionary ADT
-Version:    0.1.27
+Version:    0.1.30
 Release:    1
 Group:      System/Libraries
 License:    Apache License, Version 2.0
 Source0:    bundle-%{version}.tar.gz
-Requires(post): /sbin/ldconfig
-Requires(postun): /sbin/ldconfig
 BuildRequires:  cmake
 BuildRequires:  pkgconfig(glib-2.0)
 BuildRequires:  pkgconfig(dlog)
-
-
 %description
 Simple string key-val dictionary ADT
-
-
 
 %package devel
 Summary:    String key-val dictionary ADT (devel)
@@ -32,24 +25,15 @@ Simple string key-val dictionary ADT (devel)
 
 
 %build
-cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix}
-
-
+%cmake .
 make %{?jobs:-j%jobs}
 
 %install
-rm -rf %{buildroot}
 %make_install
-
-
-
 
 %post -p /sbin/ldconfig
 
 %postun -p /sbin/ldconfig
-
-
-
 
 
 %files

@@ -38,7 +38,7 @@ CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/bundle.pc.in ${CMAKE_BINARY_DIR}/bundle.pc @O
 
 ### Install
 install(TARGETS bundle
-	DESTINATION lib
+    DESTINATION lib${LIB_SUFFIX}
 	)
 install(FILES 
 	${CMAKE_SOURCE_DIR}/include/bundle.h 
@@ -46,7 +46,7 @@ install(FILES
 	DESTINATION include/
 		)
 install(FILES ${CMAKE_BINARY_DIR}/bundle.pc 
-		DESTINATION lib/pkgconfig/
+    DESTINATION lib${LIB_SUFFIX}/pkgconfig/
 		)
 
 

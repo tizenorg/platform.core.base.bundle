@@ -448,6 +448,20 @@ API int bundle_keyval_type_is_array(bundle_keyval_t *kv);
 
 
 /**
+ * @brief	Determine if kv is measurable type or not.
+ * @pre		kv must be a valid bundle_keyval_t object.
+ * @post	None
+ * @see		bundle_foreach
+ * @param[in]	kv	A bundle_keyval_t object
+ * @return		Operation result
+ * @retval		1	kv is an measurable.
+ * @retval		0	kv is not an measurable.
+ * @remark
+ */
+API int bundle_keyval_type_is_measurable(bundle_keyval_t *kv);
+
+
+/**
  * @brief	Get value and size of the value from kv of basic type.
  * @pre		kv must be a valid bundle_keyval_t object.
  * @post	val, size are set.
@@ -637,7 +651,6 @@ API int				bundle_free_exported_argv(int argc, char ***argv);
  */
 API bundle *		bundle_import_from_argv(int argc, char **argv);
 
-#if 0
 /**
  * @brief		Add a string type key-value pair into bundle. 
  * @pre			b must be a valid bundle object.
@@ -897,7 +910,6 @@ API int bundle_get_byte(bundle *b, const char *key, void **byte, size_t *size);
  @endcode
  */
 API int bundle_get_byte_array(bundle *b, const char *key, void ***byte_array, unsigned int *len, unsigned int **array_element_size);
-#endif
 
 
 #ifdef __cplusplus
