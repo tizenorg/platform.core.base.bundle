@@ -28,12 +28,11 @@
 void
 keyval_type_init(void)
 {
-	static int is_done;
-	is_done = 0;
+	static int is_done = 0;
+
 	if(is_done) return;
 
 	// Still do nothing
-	
 	is_done = 1;
 }
 

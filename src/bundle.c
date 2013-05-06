@@ -538,6 +538,139 @@ struct _argv_idx {
 	int idx;
 };
 
+int
+bundle_encode_raw(bundle *b, bundle_raw **r, int *len)
+{
+	keyval_t *kv = NULL;
+	unsigned char *m = NULL;
+	unsigned char *p_m = NULL;
+	unsigned char *byte = NULL;
+	size_t byte_len;
+	gchar *chksum_val = NULL;
+
+	if(NULL == b || NULL == r) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	/* calculate memory size */
+	size_t msize = 0;	// Sum of required size
+
+	kv = b->kv_head;
+	while(kv != NULL) {
+		msize += kv->method->get_encoded_size(kv);
+		kv = kv->next;
+	}
+	m = calloc(msize+CHECKSUM_LENGTH, sizeof(unsigned char));
+	if(unlikely(NULL == m ))  { errno = ENOMEM; return -1; }
+
+	p_m = m+CHECKSUM_LENGTH;	/* temporary pointer */
+
+	kv = b->kv_head;
+	while(kv != NULL) {
+		byte = NULL;
+		byte_len = 0;
+
+		kv->method->encode(kv, &byte, &byte_len);
+		memcpy(p_m, byte, byte_len);
+
+		p_m += byte_len;
+		kv = kv->next;
+
+		free(byte);
+	}
+
+	/*compute checksum from the data*/
+	chksum_val = g_compute_checksum_for_string(G_CHECKSUM_MD5,m+CHECKSUM_LENGTH,msize);
+	/*prefix checksum to the data */
+	memcpy(m,chksum_val,CHECKSUM_LENGTH);
+	/*if ( NULL != r ) {
+		*r =(unsigned char*)g_base64_encode(m,msize+CHECKSUM_LENGTH);
+		if ( NULL != len ) *len = strlen((char*)*r);
+	}
+	free(m);*/
+	*r = m;
+	*len = msize+CHECKSUM_LENGTH;
+	g_free(chksum_val);/*free checksum string */
+
+	return 0;
+}
+
+bundle *
+bundle_decode_raw(const bundle_raw *r, const int data_size)
+{
+	bundle *b = NULL;
+	bundle_raw *p_r = NULL;
+	unsigned char *d_str = NULL;
+	unsigned int d_len_raw;
+	unsigned char *d_r = NULL;
+	unsigned int d_len;
+	char *extract_cksum = NULL;
+	gchar* compute_cksum = NULL;
+
+	if(NULL == r) {
+		errno = EINVAL;
+		return NULL;
+	}
+
+	extract_cksum = calloc(CHECKSUM_LENGTH+1, sizeof(char));
+	if(unlikely(NULL== extract_cksum))
+	{
+		errno = ENOMEM;
+		return NULL;
+	}
+
+	/* base 64 decode of input string*/
+	//d_str = g_base64_decode((char*)r, &d_len_raw);
+	d_str = r;
+	d_len_raw = data_size;
+	/*extract checksum from the received string */
+	strncpy(extract_cksum,d_str,CHECKSUM_LENGTH);
+	/* compute checksum for the data */
+	compute_cksum = g_compute_checksum_for_string(G_CHECKSUM_MD5,d_str+CHECKSUM_LENGTH,d_len_raw-CHECKSUM_LENGTH);
+	/*compare checksum values- extracted from the received string and computed from the data */
+	if(strcmp(extract_cksum,compute_cksum)!=0)
+	{
+		free(extract_cksum);
+		g_free(compute_cksum);
+		return NULL;
+	}
+	d_r = d_str+CHECKSUM_LENGTH;
+	d_len= d_len_raw-CHECKSUM_LENGTH;
+
+	/* re-construct bundle */
+	b = bundle_create();
+
+	p_r = (bundle_raw *)d_r;
+
+	size_t bytes_read;
+	keyval_t *kv;
+
+	while(p_r < d_r + d_len - 1) {
+		kv = NULL;	// To get a new kv
+
+		// Find type, and use decode function according to type
+		int type = keyval_get_type_from_encoded_byte(p_r);
+
+		if(keyval_type_is_array(type)) {
+			bytes_read = keyval_array_decode(p_r, (keyval_array_t **) &kv);
+		}
+		else {
+			bytes_read = keyval_decode(p_r, &kv);
+		}
+
+		if(kv) _bundle_append_kv(b, kv);
+		else { break; }
+		p_r += bytes_read;
+	}
+
+	free(extract_cksum);
+	g_free(compute_cksum);
+	//free(d_str);
+
+	return b;
+}
+
 
 void 
 _iter_export_to_argv(const char *key, const int type, const keyval_t *kv, void *user_data)

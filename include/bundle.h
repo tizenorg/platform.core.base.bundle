@@ -562,6 +562,61 @@ API int				bundle_free_encoded_rawdata(bundle_raw **r);
  */
 API bundle *		bundle_decode(const bundle_raw *r, const int len);
 
+/**
+ * @brief	Encode bundle to bundle_raw format
+ * @pre			b must be a valid bundle object.
+ * @post		None
+ * @see			None
+ * @param[in]	b	bundle object
+ * @param[out]	r	returned bundle_raw data(byte data)
+ *					r MUST BE FREED by free(r).
+ * @param[out]	len	size of r (in bytes)
+ * @return	size of raw data
+ * @retval		0		Success
+ * @retval		-1		Failure
+ * @remark		None
+ @code
+ #include <bundle.h>
+ bundle *b = bundle_create(); // Create new bundle object
+ bundle_add(b, "foo_key", "bar_val"); // add a key-val pair
+ bundle_raw *r;
+ int len;
+ bundle_encode_raw(b, &r, &len);	// encode b
+
+ bundle_free_encoded_rawdata(r);
+ bundle_free(b);
+ @endcode
+ */
+API int				bundle_encode_raw(bundle *b, bundle_raw **r, int *len);
+
+/**
+ * @brief	deserialize bundle_raw, and get bundle object
+ * @pre			b must be a valid bundle object.
+ * @post		None
+ * @see			None
+ * @param[in]	r	bundle_raw data to be converted to bundle object
+ * @param[in]	len	size of r
+ * @return	bundle object
+ * @retval	NULL	Failure
+ * @remark		None
+ @code
+ #include <bundle.h>
+ bundle *b = bundle_create(); // Create new bundle object
+ bundle_add(b, "foo_key", "bar_val"); // add a key-val pair
+
+ bundle_raw *encoded_b;
+ int len;
+ bundle_encode(b, &encoded_b, &len);	// encode b
+
+ bundle *b_dup;
+ b_dup = bundle_decode_raw(encoded_b, len);	// decoded bundle object
+
+ bundle_free(b);
+ free(encoded_b);
+ bundle_free(b_dup);
+ @endcode
+ */
+API bundle *		bundle_decode_raw(const bundle_raw *r, const int len);
 
 /**
  * @brief	Export bundle to argv

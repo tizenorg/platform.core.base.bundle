@@ -1,6 +1,6 @@
 Name:       bundle
 Summary:    String key-val dictionary ADT
-Version:    0.1.30
+Version:    0.1.31
 Release:    1
 Group:      System/Libraries
 License:    Apache License, Version 2.0
