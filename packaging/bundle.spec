@@ -5,6 +5,7 @@ Release:    1
 Group:      System/Libraries
 License:    Apache License, Version 2.0
 Source0:    bundle-%{version}.tar.gz
+Source1001: 	bundle.manifest
 BuildRequires:  cmake
 BuildRequires:  pkgconfig(glib-2.0)
 BuildRequires:  pkgconfig(dlog)
@@ -22,6 +23,7 @@ Simple string key-val dictionary ADT (devel)
 
 %prep
 %setup -q -n %{name}-%{version}
+cp %{SOURCE1001} .
 
 
 %build
@@ -37,12 +39,13 @@ make %{?jobs:-j%jobs}
 
 
 %files
-%manifest bundle.manifest
+%manifest %{name}.manifest
 %defattr(-,root,root,-)
 %{_libdir}/libbundle.so.*
 
 
 %files devel
+%manifest %{name}.manifest
 %defattr(-,root,root,-)
 %{_includedir}/bundle.h
 %{_includedir}/SLP_bundle_PG.h
