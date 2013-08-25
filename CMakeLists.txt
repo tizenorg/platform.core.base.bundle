@@ -1,12 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(bundle C)
 
-### Get VERSION from debian/changelog
-file(STRINGS debian/changelog version_line LIMIT_COUNT 1 REGEX "(.*)")
-string(REGEX REPLACE ".*\\(\([0-9]+:\)*\([0-9a-zA-Z.]*\).*\\).*" "\\2" VERSION ${version_line})  # Get version
-string(REGEX REPLACE "^\([0-9]+\)\\..*" "\\1" VERSION_MAJOR ${VERSION})  # Get major version
-message(STATUS "Version from debian/changelog: ${VERSION},  Major version: ${VERSION_MAJOR}")
-
 ### Required packages
 INCLUDE(FindPkgConfig)
 pkg_check_modules(pkgs REQUIRED glib-2.0 dlog)
@@ -26,8 +20,9 @@ add_library(bundle SHARED
 		src/keyval.c
 		src/keyval_array.c
 		)
-set_target_properties(bundle PROPERTIES SOVERSION ${VERSION_MAJOR})
-set_target_properties(bundle PROPERTIES VERSION ${VERSION})
+set_target_properties(bundle PROPERTIES SOVERSION "0")
+set_target_properties(bundle PROPERTIES VERSION "0.1.31")
+message(STATUS "Version from debian/changelog: ${VERSION},  Major version: ${VERSION_MAJOR}")
 target_link_libraries(bundle ${pkgs_LDFLAGS})
 
 

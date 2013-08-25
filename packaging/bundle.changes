@@ -1,3 +1,6 @@
+* Sun Aug 25 2013 Chengwei Yang <chengwei.yang@intel.com>
+- Remove debian packaging stuff
+
 * Fri Jan 18 2013 Anas Nashif <anas.nashif@intel.com> accepted/trunk/20130116.003550@4ecb922
 - Support installation in /usr/lib64
 
