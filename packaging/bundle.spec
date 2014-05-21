@@ -1,11 +1,11 @@
 Name:       bundle
 Summary:    String key-val dictionary ADT
 Version:    0.1.31
-Release:    1
+Release:    0
 Group:      System/Libraries
-License:    Apache License, Version 2.0
-Source0:    bundle-%{version}.tar.gz
-Source1001: 	bundle.manifest
+License:    Apache-2.0
+Source0:        bundle-%{version}.tar.gz
+Source1001:     bundle.manifest
 BuildRequires:  cmake
 BuildRequires:  pkgconfig(glib-2.0)
 BuildRequires:  pkgconfig(dlog)
@@ -34,7 +34,6 @@ make %{?jobs:-j%jobs}
 %make_install
 
 mkdir -p %{buildroot}/usr/share/license
-cp LICENSE %{buildroot}/usr/share/license/%{name}
 
 %post -p /sbin/ldconfig
 
@@ -45,7 +44,7 @@ cp LICENSE %{buildroot}/usr/share/license/%{name}
 %manifest %{name}.manifest
 %defattr(-,root,root,-)
 %{_libdir}/libbundle.so.*
-/usr/share/license/%{name}
+%license LICENSE
 
 
 %files devel
