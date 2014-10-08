@@ -25,15 +25,12 @@ Simple string key-val dictionary ADT (devel)
 %setup -q -n %{name}-%{version}
 cp %{SOURCE1001} .
 
-
 %build
 %cmake .
-make %{?jobs:-j%jobs}
+%__make %{?_smp_mflags}
 
 %install
 %make_install
-
-mkdir -p %{buildroot}/usr/share/license
 
 %post -p /sbin/ldconfig
 
@@ -46,7 +43,6 @@ mkdir -p %{buildroot}/usr/share/license
 %{_libdir}/libbundle.so.*
 %license LICENSE
 
-
 %files devel
 %manifest %{name}.manifest
 %defattr(-,root,root,-)
@@ -54,4 +50,3 @@ mkdir -p %{buildroot}/usr/share/license
 %{_includedir}/SLP_bundle_PG.h
 %{_libdir}/pkgconfig/bundle.pc
 %{_libdir}/libbundle.so
-
