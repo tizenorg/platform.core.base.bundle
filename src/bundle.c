@@ -757,7 +757,7 @@ bundle_import_from_argv(int argc, char **argv)
 	{
 		/*BUNDLE_LOG_PRINT("\nit is not encoded");*/
 		int idx;
-		for (idx = 1; idx < argc; idx = idx + 2) {        /*start idx from one as argv[1] is user given argument*/
+		for (idx = 1; idx + 1 < argc; idx = idx + 2) {        /*start idx from one as argv[1] is user given argument*/
 			bundle_add(b, argv[idx], argv[idx + 1]);
 		}
 		return b;
@@ -769,7 +769,7 @@ bundle_import_from_argv(int argc, char **argv)
 	unsigned char *byte = NULL;
 	char *encoded_byte;
 	unsigned int byte_size;
-	for(idx = 2; idx < argc; idx = idx+2) {  // start idx from 2 as argv[1] is encoded
+	for(idx = 2; idx + 1 < argc; idx = idx+2) {  // start idx from 2 as argv[1] is encoded
 		kv = NULL;
 		kva = NULL;
 
