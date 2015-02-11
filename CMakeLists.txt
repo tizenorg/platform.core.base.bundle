@@ -1,5 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(bundle C)
+set (VERSION "0.1.31")
 
 ### Required packages
 INCLUDE(FindPkgConfig)
@@ -21,7 +22,7 @@ add_library(bundle SHARED
 		src/keyval_array.c
 		)
 set_target_properties(bundle PROPERTIES SOVERSION "0")
-set_target_properties(bundle PROPERTIES VERSION "0.1.31")
+set_target_properties(bundle PROPERTIES VERSION "${VERSION}")
 message(STATUS "Version from debian/changelog: ${VERSION},  Major version: ${VERSION_MAJOR}")
 target_link_libraries(bundle ${pkgs_LDFLAGS})
 
