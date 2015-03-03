@@ -4,7 +4,7 @@ set (VERSION "0.1.31")
 
 ### Required packages
 INCLUDE(FindPkgConfig)
-pkg_check_modules(pkgs REQUIRED glib-2.0 dlog)
+pkg_check_modules(pkgs REQUIRED glib-2.0 dlog capi-base-common)
 FOREACH(flag ${pkgs_CFLAGS})
 	SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag}")
 ENDFOREACH(flag)

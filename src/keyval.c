@@ -29,9 +29,8 @@
 #include "keyval_type.h"
 #include "keyval.h"
 #include "bundle_log.h"
+#include "bundle.h"
 #include <stdlib.h>
-#include <errno.h>
-extern int errno;
 
 static keyval_method_collection_t method = {
 	keyval_free,
@@ -42,48 +41,45 @@ static keyval_method_collection_t method = {
 };
 
 keyval_t *
-keyval_new(keyval_t *kv, const char *key, const int type, const void *val, const size_t size)
+keyval_new(keyval_t *kv, const char *key, const int type, const void *val,
+		const size_t size)
 {
 	int must_free_obj;
 	must_free_obj = kv ? 0 : 1;
 
-	if(!kv) {	
+	if (!kv) {
 		kv = calloc(1, sizeof(keyval_t));
-		if(!kv) {
-			//errno = ENOMEM;	// set by calloc
+		if (!kv) {
+			set_last_result(BUNDLE_ERROR_OUT_OF_MEMORY);
 			return NULL;
 		}
 	}
 
-	// key
-	if(kv->key) {
+	if (kv->key) {
 		keyval_free(kv, must_free_obj);
 		return NULL;
 	}
 	kv->key = strdup(key);
-	if(!kv->key) {
-		//errno = ENOMEM;	// set by strdup
+	if (!kv->key) {
+		set_last_result(BUNDLE_ERROR_OUT_OF_MEMORY);
 		keyval_free(kv, must_free_obj);
 		return NULL;
 	}
 
-	// elementa of primitive types
 	kv->type = type;
 	kv->size = size;
-	
-	if(size) {
-		kv->val = calloc(1, size);		// allocate memory unconditionally !
-		if(!kv->val) {
-			errno = ENOMEM;
+
+	if (size) {
+		kv->val = calloc(1, size);
+		if (!kv->val) {
+			set_last_result(BUNDLE_ERROR_OUT_OF_MEMORY);
 			keyval_free(kv, 1);
 			return NULL;
 		}
-		if(val) {
+		if (val)
 			memcpy(kv->val, val, size);
-		}
 	}
 
-	// Set methods
 	kv->method = &method;
 
 	return kv;
@@ -92,21 +88,21 @@ keyval_new(keyval_t *kv, const char *key, const int type, const void *val, const
 void
 keyval_free(keyval_t *kv, int do_free_object)
 {
-	//int i;
+	if (NULL == kv)
+		return;
 
-	if(NULL == kv) return;
-
-	if(kv->key) { 
+	if (kv->key) {
 		free(kv->key);
 		kv->key = NULL;
 	}
 
-	if(NULL != kv->val) {
+	if (NULL != kv->val) {
 		free(kv->val);
 		kv->val = NULL;
 	}
 
-	if(do_free_object) free(kv);
+	if (do_free_object)
+		free(kv);
 
 	return;
 }
@@ -114,12 +110,17 @@ keyval_free(keyval_t *kv, int do_free_object)
 int
 keyval_get_data(keyval_t *kv, int *type, void **val, size_t *size)
 {
-	if(!kv) return -EINVAL;
-	if(keyval_type_is_array(kv->type)) return -EINVAL;
+	if (!kv)
+		return BUNDLE_ERROR_INVALID_PARAMETER;
+	if (keyval_type_is_array(kv->type))
+		return BUNDLE_ERROR_INVALID_PARAMETER;
 
-	if(type) *type = kv->type;
-	if(val) *val = kv->val;
-	if(size) *size = kv->size;
+	if (type)
+		*type = kv->type;
+	if (val)
+		*val = kv->val;
+	if (size)
+		*size = kv->size;
 
 	return 0;
 }
@@ -127,15 +128,22 @@ keyval_get_data(keyval_t *kv, int *type, void **val, size_t *size)
 int
 keyval_compare(keyval_t *kv1, keyval_t *kv2)
 {
-	if(!kv1 || !kv2) return -1;
+	if (!kv1 || !kv2)
+		return -1;
 
-	if(0 != strcmp(kv1->key, kv2->key)) return 1;
-	if(kv1->type != kv2->type) return 1;
-	if(kv1->size != kv2->size) return 1;
+	if (0 != strcmp(kv1->key, kv2->key))
+		return 1;
+	if (kv1->type != kv2->type)
+		return 1;
+	if (kv1->size != kv2->size)
+		return 1;
 
-	if(kv1->val == NULL && kv2->val == NULL) return 0;
-	if(kv1->val == NULL || kv2->val == NULL) return 1;
-	if(0 != memcmp(kv1->val, kv2->val, kv1->size)) return 1;
+	if (kv1->val == NULL && kv2->val == NULL)
+		return 0;
+	if (kv1->val == NULL || kv2->val == NULL)
+		return 1;
+	if (0 != memcmp(kv1->val, kv2->val, kv1->size))
+		return 1;
 
 	return 0;
 }
@@ -143,15 +151,16 @@ keyval_compare(keyval_t *kv1, keyval_t *kv2)
 size_t
 keyval_get_encoded_size(keyval_t *kv)
 {
-	if(!kv) return 0;
+	if (!kv)
+		return 0;
 
-	size_t encoded_size 
-		= sizeof(size_t) // total size
-		+ sizeof(int)	// type
-		+ sizeof(size_t) // key size
-		+ strlen(kv->key) + 1	// key (+ null byte)
-		+ sizeof(size_t)	// size
-		+ kv->size;			// val
+	size_t encoded_size
+		= sizeof(size_t)        /* total size */
+		+ sizeof(int)           /* type */
+		+ sizeof(size_t)        /* key size */
+		+ strlen(kv->key) + 1   /* key (+ null byte) */
+		+ sizeof(size_t)        /* size */
+		+ kv->size;             /* val */
 
 	return encoded_size;
 }
@@ -169,14 +178,6 @@ keyval_get_encoded_size(keyval_t *kv)
 size_t
 keyval_encode(keyval_t *kv, unsigned char **byte, size_t *byte_len)
 {
-	/*
-	 * type
-	 * key size
-	 * key
-	 * val size
-	 * val
-	 */
-
 	static const size_t sz_type = sizeof(int);
 	static const size_t sz_keysize = sizeof(size_t);
 	size_t sz_key = strlen(kv->key) + 1;
@@ -186,10 +187,11 @@ keyval_encode(keyval_t *kv, unsigned char **byte, size_t *byte_len)
 	*byte_len = keyval_get_encoded_size(kv);
 
 	*byte = calloc(1, *byte_len);
-	if(!*byte) return 0;
+	if (!*byte)
+		return 0;
 
 	unsigned char *p = *byte;
-	
+
 	memcpy(p, byte_len, sizeof(size_t)); p += sizeof(size_t);
 	memcpy(p, &(kv->type), sz_type); p += sz_type;
 	memcpy(p, &sz_key, sz_keysize); p += sz_keysize;
@@ -226,7 +228,8 @@ keyval_decode(unsigned char *byte, keyval_t **kv)
 	size_t size = *((size_t *)p); p += sz_size;
 	void *val = (void *)p; p += size;
 
-	if(kv) *kv = keyval_new(*kv, key, type, val, size);	// If *kv != NULL, use given kv
+	if (kv)
+		*kv = keyval_new(*kv, key, type, val, size);
 
 	return byte_len;
 }
@@ -235,14 +238,11 @@ keyval_decode(unsigned char *byte, keyval_t **kv)
 int
 keyval_get_type_from_encoded_byte(unsigned char *byte)
 {
-	// skip total size (== sizeof(size_t))
 	static const size_t sz_byte_len = sizeof(size_t);
 
-	unsigned char *p=byte;
+	unsigned char *p = byte;
 	 p += sz_byte_len;
 	int type = *((int *)p);
-	return type; 
-
-	//return (int )*(byte + sizeof(size_t));
+	return type;
 }
 

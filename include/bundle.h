@@ -26,28 +26,17 @@
 
 /**
  * @file bundle.h
- * @version 0.1
- * @brief    This file declares API of bundle library
+ * @brief    This file declares has API of the bundle library
  */
 
 /**
- * @addtogroup APPLICATION_FRAMEWORK
- * @{
- *
- * @defgroup bundle
- * @version    0.1
- *
- * @section    Header to use them:
- * @code
- * #include <bundle.h>
- * @endcode
- *
- * @addtogroup bundle
+ * @addtogroup CORE_LIB_BUNDLE_MODULE
  * @{
  */
 
 #include <errno.h>
 #include <stddef.h>
+#include <tizen_error.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -58,12 +47,27 @@ extern "C" {
 #define unlikely(x) __builtin_expect(x,0)
 
 /**
- * bundle is an opaque type pointing a bundle object
+ * @brief Enumeration for error code of Bundle.
+ *
+ * @since_tizen 2.3
+ */
+typedef enum {
+	BUNDLE_ERROR_NONE = TIZEN_ERROR_NONE,					/**< Successful */
+	BUNDLE_ERROR_OUT_OF_MEMORY = TIZEN_ERROR_OUT_OF_MEMORY,			/**< Out of memory */
+	BUNDLE_ERROR_INVALID_PARAMETER = TIZEN_ERROR_INVALID_PARAMETER,		/**< Invalid parameter */
+	BUNDLE_ERROR_KEY_NOT_AVAILABLE = TIZEN_ERROR_KEY_NOT_AVAILABLE,	/**< Required key not available */
+	BUNDLE_ERROR_KEY_EXISTS = TIZEN_ERROR_FILE_EXISTS	/**< Key exists */
+} bundle_error_e;
+
+/**
+ * @brief The bundle handle.
+ * @since_tizen 2.3
  */
 typedef struct _bundle_t bundle;
 
 /**
- * bundle_raw is an encoded data type
+ * @brief The encoded data type.
+ * @since_tizen 2.3
  * @see bundle_encode()
  * @see bundle_decode()
  */
@@ -71,32 +75,39 @@ typedef unsigned char bundle_raw;
 
 
 /**
- * Each bundle keyval have a type.
+ * @brief Enumeration for key-value pair types.
+ * @since_tizen 2.3
  */
 enum bundle_type_property {
-	BUNDLE_TYPE_ARRAY = 0x0100,
-	BUNDLE_TYPE_PRIMITIVE = 0x0200,
-	BUNDLE_TYPE_MEASURABLE = 0x0400
-};
-
-enum bundle_type {
-	BUNDLE_TYPE_NONE = -1,
-	BUNDLE_TYPE_ANY = 0,
-	BUNDLE_TYPE_STR = 1 | BUNDLE_TYPE_MEASURABLE,	/* Default */
-	BUNDLE_TYPE_STR_ARRAY = BUNDLE_TYPE_STR | BUNDLE_TYPE_ARRAY | BUNDLE_TYPE_MEASURABLE,
-	BUNDLE_TYPE_BYTE = 2,
-	BUNDLE_TYPE_BYTE_ARRAY = BUNDLE_TYPE_BYTE | BUNDLE_TYPE_ARRAY
+	BUNDLE_TYPE_ARRAY = 0x0100,	/**< Array type */
+	BUNDLE_TYPE_PRIMITIVE = 0x0200,	/**< Primitive type */
+	BUNDLE_TYPE_MEASURABLE = 0x0400	/**< Measurable type */
 };
 
 /**
- * A keyval object in a bundle.
+ * @brief Enumeration for bundle types.
+ * @since_tizen 2.3
+ */
+enum bundle_type {
+	BUNDLE_TYPE_NONE = -1,	/**< None */
+	BUNDLE_TYPE_ANY = 0,	/**< Any type */
+	BUNDLE_TYPE_STR = 1 | BUNDLE_TYPE_MEASURABLE,	/**< String type (Default) */
+	BUNDLE_TYPE_STR_ARRAY = BUNDLE_TYPE_STR | BUNDLE_TYPE_ARRAY | BUNDLE_TYPE_MEASURABLE,	/**< String array type */
+	BUNDLE_TYPE_BYTE = 2,	/**< Byte type */
+	BUNDLE_TYPE_BYTE_ARRAY = BUNDLE_TYPE_BYTE | BUNDLE_TYPE_ARRAY	/**< Byte array type */
+};
+
+/**
+ * @brief The key-value pair handle.
+ * @since_tizen 2.3
  * @see bundle_iterator_t
  */
 typedef struct keyval_t bundle_keyval_t;
 
 
 /**
- * bundle_iterator is a new iterator function type for bundle_foreach()
+ * @brief Called for every key-value pair.
+ * @since_tizen 2.3
  * @see bundle_foreach()
  */
 typedef void (*bundle_iterator_t) (
@@ -108,22 +119,24 @@ typedef void (*bundle_iterator_t) (
 
 
 /**
- * bundle_iterate_cb_t is an iterator function type for bundle_iterate()
+ * @internal
+ * @brief Called for every key-value pair.
+ * @since_tizen 2.3
+ * @remarks This type is obsolete. You must not use this type any more.
  * @see bundle_iterate()
- * @remark This type is obsolete. Do not use this type any more.
  */
 typedef void (*bundle_iterate_cb_t) (const char *key, const char *val, void *data);
 
 
-/** 
- * @brief 	Create a bundle object.
- * @pre			None
- * @post		None
+/**
+ * @brief Creates a bundle object.
+ * @since_tizen 2.3
+ * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
+ * @return	The bundle object
+ * @retval	@c NULL - Failure
+ * @exception BUNDLE_ERROR_NONE	Success
+ * @exception BUNDLE_ERROR_OUT_OF_MEMORY	Out of memory
  * @see			bundle_free()
- * @return	bundle object
- * @retval	NULL	on failure creating an object
- * @remark	When NULL is returned, errno is set to one of the following values; \n
- * 			ENOMEM : No memory to create an object
  *
  @code
  #include <bundle.h>
@@ -134,15 +147,14 @@ typedef void (*bundle_iterate_cb_t) (const char *key, const char *val, void *dat
 API bundle*		bundle_create(void);
 
 /**
- * @brief		Free given bundle object with key/values in it
- * @pre			b must be a valid bundle object.
- * @post		None
+ * @brief Frees the given bundle object with key-value pairs in it.
+ * @since_tizen 2.3
+ * @param[in]	b	The bundle object to be freed
+ * @return		The operation result;
+ * @retval BUNDLE_ERROR_NONE	Success
+ * @retval BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @pre			@a b must be a valid bundle object.
  * @see			bundle_create()
- * @param[in]	b	bundle object to be freed
- * @return		Operation result;
- * @retval		0 success
- * @retval		-1 failure
- * @remark		None
  @code
  #include <bundle.h>
  bundle *b = bundle_create(); // Create new bundle object
@@ -150,24 +162,22 @@ API bundle*		bundle_create(void);
  @endcode
  */
 API int			bundle_free(bundle *b);
+
 /**
- * @brief		Add a string array type key-value pair into bundle. 
- * @pre			b must be a valid bundle object.
- * @post		None
+ * @brief Adds a strings array type key-value pair into a given bundle.
+ * @since_tizen 2.3
+ * @param[in]	b	The bundle object
+ * @param[in]	key	The key
+ * @param[in]	str_array The string type value; if @c NULL, an empty array is created; you can change an item with
+ * @param[in]	len The length of the array
+ * @return		The operation result
+ * @retval BUNDLE_ERROR_NONE	Success
+ * @retval BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @retval BUNDLE_ERROR_KEY_EXISTS	Key already exists
+ * @retval BUNDLE_ERROR_OUT_OF_MEMORY	Out of memory
+ * @pre			@a b must be a valid bundle object.
  * @see			bundle_get_str_array()
- * @see			bundle_set_str_array_element()
- * @param[in]	b	bundle object
- * @param[in]	key	key
- * @param[in]	str_array string type value. If NULL, empty array is created. You can change an item with 
- * @param[in]	len Length of array.
- * @return		Operation result
- * @retval		0	success
- * @retval		-1	failure
  *
- * @remark		When -1 is returned, errno is set to one of the following values; \n
-  				EKEYREJECTED : key is rejected (NULL or sth) \n
- 				EPERM : key is already exist, not permitted to overwrite value \n
-  				EINVAL : b or val is not valid (NULL or sth) \n
  @code
  #include <bundle.h>
  char *sa = { "aaa", "bbb", "ccc" };	// A string array of length 3
@@ -177,22 +187,21 @@ API int			bundle_free(bundle *b);
  @endcode
  */
 API int bundle_add_str_array(bundle *b, const char *key, const char **str_array, const int len);
+
 /**
- * @brief		Add a string type key-value pair into bundle. 
- * @pre			b must be a valid bundle object.
- * @post		None
+ * @internal
+ * @brief Adds a string type key-value pair into a given bundle.
+ * @since_tizen 2.3
+ * @param[in]	b	The bundle object
+ * @param[in]	key	The key
+ * @param[in]	val	The value
+ * @return		The operation result
+ * @retval BUNDLE_ERROR_NONE	Success
+ * @retval BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @retval BUNDLE_ERROR_KEY_EXISTS	Key already exists
+ * @retval BUNDLE_ERROR_OUT_OF_MEMORY	Out of memory
+ * @pre			@a b must be a valid bundle object.
  * @see			bundle_add_str()
- * @param[in]	b	bundle object
- * @param[in]	key	key
- * @param[in]	val	value
- * @return		Operation result
- * @retval		0	success
- * @retval		-1	failure
- *
- * @remark		When -1 is returned, errno is set to one of the following values; \n
-  				EKEYREJECTED : key is rejected (NULL or sth) \n
- 				EPERM : key is already exist, not permitted to overwrite value \n
-  				EINVAL : b or val is not valid (NULL or sth) \n
  @code
  #include <bundle.h>
  bundle *b = bundle_create(); // Create new bundle object
@@ -204,53 +213,46 @@ API int bundle_add_str_array(bundle *b, const char *key, const char **str_array,
 API int				bundle_add(bundle *b, const char *key, const char *val);
 
 /**
- * @brief		Delete val with given key
- * @pre			b must be a valid bundle object.
- * @post		None
- * @see			None
- * @param[in]	b	bundle object
- * @param[in]	key	given key
- * @return		Operation result
- * @retval		0	Success
- * @retval		-1	Failure
- *
- * @remark		When -1 is returned, errno is set to one of the following values; \n
-  				EINVAL : b is invalid (NULL or sth) \n
-  				ENOKEY : No key exist \n
-  				EKEYREJECTED : key is invalid (NULL or sth) \n
+ * @brief Deletes a key-value object with the given key.
+ * @since_tizen 2.3
+ * @param[in]	b	The bundle object
+ * @param[in]	key	The given key
+ * @return		The operation result
+ * @retval BUNDLE_ERROR_NONE	Success
+ * @retval BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @retval BUNDLE_ERROR_KEY_NOT_AVAILABLE	Key not available
+ * @pre			@a b must be a valid bundle object.
  @code
  #include <bundle.h>
  bundle *b = bundle_create(); // Create new bundle object
- bundle_add(b, "foo_key", "bar_val"); // add a key-val pair
+ bundle_add_str(b, "foo_key", "bar_val"); // add a key-val pair
  bundle_del(b, "foo_key"); // del "foo_key" from b
 
  bundle_free(b);
  @endcode
  */
 API int				bundle_del(bundle *b, const char* key);
+
 /**
- * @brief		Get string array value from key
- * @pre			b must be a valid bundle object.
- * @post		None
+ * @brief Gets a string array from a given key.
+ * @since_tizen 2.3
+ * @remarks 		You MUST free or modify the returned string!
+ * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
+ * @param[in]	b	The bundle object
+ * @param[in]	key	The key
+ * @param[out]	len	The array length
+ * @return		The pointer to the array of strings
+ * @retval		@c NULL - Key not found
+ * @exception BUNDLE_ERROR_NONE	Success
+ * @exception BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @exception BUNDLE_ERROR_KEY_NOT_AVAILABLE	Key not available
+ * @pre			@a b must be a valid bundle object.
  * @see			bundle_add_str_array()
- * @see			bundle_set_str_array_element()
- * @param[in]	b	bundle object
- * @param[in]	key	key
- * @param[out]	len	array length
- * @return		Pointer to array of  string
- * @retval		NULL	If key is not found, returns NULL.
- * @remark 		DO NOT free or modify returned string!
-  				When NULL is returned, errno is set to one of the following values; \n
-  				EINVAL : b is invalid \n
-  				ENOKEY : No key exists \n
-  				EKEYREJECTED : invalid key (NULL or sth) \n
  @code
  #include <bundle.h>
  bundle *b = bundle_create();
- bundle_add_str_array(b, "foo", NULL, 3); // add a key-val pair
- bundle_set_str_array_element(b, "foo", 0, "aaa");
- bundle_set_str_array_element(b, "foo", 1, "bbb");
- bundle_set_str_array_element(b, "foo", 2, "ccc");
+ char *sa = { "aaa", "bbb", "ccc" };	// A string array of length 3
+ bundle_add_str_array(b, "foo", sa, 3); // add a key-val pair
 
  char **str_array = NULL;
  int len_str_array = 0;
@@ -261,26 +263,27 @@ API int				bundle_del(bundle *b, const char* key);
  bundle_free(b);
  @endcode
  */
-
 API const char** bundle_get_str_array(bundle *b, const char *key,int *len);
+
 /**
- * @brief		Get value from key
- * @pre			b must be a valid bundle object.
- * @post		None
+ * @internal
+ * @brief Gets a value with a given key.
+ * @since_tizen 2.3
+ * @remarks		You MUST free or modify the returned string!
+ * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
+ * @param[in]	b	The bundle object
+ * @param[in]	key	The key
+ * @return		The pointer for the value string
+ * @retval		@c NULL - Key not found
+ * @exception BUNDLE_ERROR_NONE	Success
+ * @exception BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @exception BUNDLE_ERROR_KEY_NOT_AVAILABLE	Key not available
+ * @pre			@a b must be a valid bundle object.
  * @see			bundle_get_str()
- * @param[in]	b	bundle object
- * @param[in]	key	key
- * @return		Pointer for value string
- * @retval		NULL	If key is not found, returns NULL.
- * @remark		DO NOT free or modify returned string!
-  				When NULL is returned, errno is set to one of the following values; \n
-  				EINVAL : b is invalid \n
-  				ENOKEY : No key exists \n
-  				EKEYREJECTED : invalid key (NULL or sth) \n
  @code
  #include <bundle.h>
  bundle *b = bundle_create(); // Create new bundle object
- bundle_add(b, "foo_key", "bar_val"); // add a key-val pair
+ bundle_add_str(b, "foo", "bar"); //add a key-val pair
  char *val = bundle_get_val(b, "foo_key");	// val = "bar_val"
 
  bundle_free(b);	// After freeing b, val becomes a dangling pointer.
@@ -290,19 +293,17 @@ API const char** bundle_get_str_array(bundle *b, const char *key,int *len);
 API const char*		bundle_get_val(bundle *b, const char *key);
 
 /**
- * @brief	Get the number of bundle items
- * @pre			b must be a valid bundle object.
- * @post		None
- * @see			None
- * @param[in]	b	bundle object
- * @return		Number of bundle items
- * @remark		None
+ * @brief Gets the number of bundle items.
+ * @since_tizen 2.3
+ * @param[in]	b	The bundle object
+ * @return		The number of bundle items
+ * @pre			@a b must be a valid bundle object.
  @code
  #include <bundle.h>
  bundle *b = bundle_create(); // Create new bundle object
- bundle_add(b, "key1", "val1"); // add a key-val pair
+ bundle_add_str(b, "key1", "val1"); //add a key-val pair
  int count = bundle_get_count(b);	// count=1
- bundle_add(b, "key2", "val2"); // add another key-val pair
+ bundle_add_str(b, "key2", "val2"); // add another key-val pair
  count = bundle_get_count(b); // count=2
 
  bundle_free(b);
@@ -310,36 +311,39 @@ API const char*		bundle_get_val(bundle *b, const char *key);
  */
 API int				bundle_get_count(bundle *b);
 
-
 /**
- * @brief	Get a type of a value with certain key
- * @pre		b must be a valid bundle object
- * @post	None
- * @see		bundle_type_t
+ * @brief Gets the type of a value with a given key.
+ * @since_tizen 2.3
+ * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
  * @param[in]	b	A bundle
- * @param[in]	key	A key in bundle
- * @return	Type of a key in b
- * @remark
+ * @param[in]	key	A key in the bundle
+ * @return	The type of a key in @a b
+ * @exception BUNDLE_ERROR_NONE	Success
+ * @exception BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @exception BUNDLE_ERROR_KEY_NOT_AVAILABLE	Key not available
+ * @pre		@a b must be a valid bundle object.
+ * @see		bundle_type_t
  @code
  @endcode
  */
 API int bundle_get_type(bundle *b, const char *key);
 
-
 /**
- * @brief	Duplicate given bundle object
- * @pre			b must be a valid bundle object.
- * @post		None
- * @see			None
- * @param[in]	b_from	bundle object to be duplicated
- * @return		New bundle object
- * @retval		NULL	Failure
- * @remark		None
+ * @internal
+ * @brief Duplicates a given bundle object.
+ * @since_tizen 2.3
+ * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
+ * @param[in]	b_from	the bundle object to be duplicated
+ * @return		The new bundle object
+ * @retval		@c NULL - Failure
+ * @exception BUNDLE_ERROR_NONE	Success
+ * @exception BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @pre			@a b must be a valid bundle object.
  @code
  #include <bundle.h>
  bundle *b = bundle_create(); // Create new bundle object
- bundle_add(b, "foo_key", "bar_val"); // add a key-val pair
- bundle *b_dup = bundle_dup(b);	// duplicate b 
+ bundle_add_str(b, "foo_key", "bar_val"); // add a key-val pair
+ bundle *b_dup = bundle_dup(b);	// duplicate b
 
  bundle_free(b);
  bundle_free(b_dup);
@@ -348,16 +352,20 @@ API int bundle_get_type(bundle *b, const char *key);
 API bundle *		bundle_dup(bundle *b_from);
 
 /**
- * @brief	iterate callback function with each key/val pairs in bundle. (NOTE: Only BUNDLE_TYPE_STR type values come!)
- * @pre			b must be a valid bundle object.
- * @post		None
- * @see			None
- * @param[in]	b	bundle object
- * @param[in]	callback	iteration callback function
- * @param[in]	data	data for callback function
- * @remark		This function is obsolete, and does not give values whose types are not BUNDLE_TYPE_STR.
+ * @internal
+ * @brief Iterates a callback function for each key-value pairs in a given bundle.
+ * @details (NOTE: Only BUNDLE_TYPE_STR type values come!)
+ * @since_tizen 2.3
+ * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
+ * @remarks		This function is obsolete and does not give values whose types are not BUNDLE_TYPE_STR.
+ * @param[in]	b	The bundle object
+ * @param[in]	callback	The iteration callback function
+ * @param[in]	cb_data	The data for callback function
+ * @exception BUNDLE_ERROR_NONE	Success
+ * @exception BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @pre			@a b must be a valid bundle object.
  @code
- @include <stdio.h>
+ #include <stdio.h>
  #include <bundle.h>
  void sample_cb(const char *k, const char *v, void *data) {
    printf("%s -> %s\n", k, v);
@@ -365,28 +373,34 @@ API bundle *		bundle_dup(bundle *b_from);
 
  int main(void) {
 	 bundle *b = bundle_create(); // Create new bundle object
-	 bundle_add(b, "k1", "v1"); // add a key-val pair
-	 bundle_add(b, "k2", "v2"); // add a key-val pair
-	 bundle_add(b, "k3", "v3"); // add a key-val pair
-	 bundle_iterate(b, sample_cb, NULL);	// iterate sample_cb for each key/val
+	 bundle_add_str(b, "k1", "v1"); // add a key-val pair
+	 bundle_add_str(b, "k2", "v2"); // add a key-val pair
+	 bundle_add_str(b, "k3", "v3"); // add a key-val pair
+	 bundle_iterate(b, sample_cb, NULL);	// iterate sample_cb() for each key/val
 	 return 0;
- } 
+ }
  @endcode
  */
 API void			bundle_iterate(bundle *b, bundle_iterate_cb_t callback, void *cb_data);
 
-
 /**
- * @brief	iterate callback function with each key/val pairs in bundle. (Supports all types of value)
- * @pre			b must be a valid bundle object.
- * @post		None
- * @see			bundle_keyval_get_type bundle_keyval_type_is_array bundle_keyval_get_basic_val bundle_keyval_get_array_val
- * @param[in]	b	bundle object
- * @param[in]	iter	iteration callback function
- * @param[in]	user_data	data for callback function
- * @remark		This function supports all types.
+ * @brief Iterates a callback function for each key-value pair in a given bundle.
+ * @details Supports all types of values.
+ * @since_tizen 2.3
+ * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
+ * @remarks		This function supports all types.
+ * @param[in]	b	The bundle object
+ * @param[in]	iter	The iteration callback function
+ * @param[in]	user_data	The data for the callback function
+ * @exception BUNDLE_ERROR_NONE	Success
+ * @exception BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @pre			@a b must be a valid bundle object.
+ * @see			bundle_keyval_get_type()
+ * @see			bundle_keyval_type_is_array()
+ * @see			bundle_keyval_get_basic_val()
+ * @see			bundle_keyval_get_array_val()
  @code
- @include <stdio.h>
+ #include <stdio.h>
  #include <bundle.h>
  void sample_cb(const char *key, const int type, const bundle_keyval_t *kv, void *user_data) {
    void *basic_val = NULL;
@@ -401,152 +415,153 @@ API void			bundle_iterate(bundle *b, bundle_iterate_cb_t callback, void *cb_data
 	 // Do something...
    }
    else {
-     bundle_keyval_get_basic_val(kv, &basic_val, &size);
+     bundle_keyval_get_basic_val(kv, &basic_val, &basic_size);
 	 // Do something...
    }
  }
- 
+
  int main(void) {
 	 bundle *b = bundle_create(); // Create new bundle object
 	 bundle_add_str(b, "k1", "v1"); // add a key-val pair
 	 bundle_add_byte(b, "k2", "v2", 3); // add a key-val pair
 	 char *s_arr[] = {"abc", "bcd", "cde"};
 	 bundle_add_str_array(b, "k3", s_arr, 3); // add a key-val pair
-	 bundle_iterate(b, sample_cb, NULL);	// iterate sample_cb for each key/val
+	 bundle_foreach(b, sample_cb, NULL);	// iterate sample_cb() for each key/val
 	 return 0;
- } 
+ }
  @endcode
  */
 API void			bundle_foreach(bundle *b, bundle_iterator_t iter, void *user_data);
 
-
 /**
- * @brief	Get type for a bundle_keyval_t object.
- * @pre		kv must be a valid bundle_keyval_t object.
- * @post	None
- * @see		bundle_foreach
+ * @brief Gets the type of a key-value pair.
+ * @since_tizen 2.3
+ * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
  * @param[in]	kv	A bundle_keyval_t object
- * @return	Type of kv
- * @retval	-1	Operation failure.	errno is set.
- * @remark
+ * @return	The type of @a kv
+ * @retval	@c -1 - Failure
+ * @exception BUNDLE_ERROR_NONE	Success
+ * @exception BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @pre		@a kv must be a valid bundle_keyval_t object.
+ * @see		bundle_foreach()
  */
 API int bundle_keyval_get_type(bundle_keyval_t *kv);
 
-
 /**
- * @brief	Determine if kv is array type or not.
- * @pre		kv must be a valid bundle_keyval_t object.
- * @post	None
- * @see		bundle_foreach
+ * @brief Determines whether the  type of a key-value pair is array.
+ * @since_tizen 2.3
+ * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
  * @param[in]	kv	A bundle_keyval_t object
- * @return		Operation result
- * @retval		1	kv is an array.
- * @retval		0	kv is not an array.
- * @remark
+ * @return		The operation result
+ * @retval		@c 1 - @a kv is an array
+ * @retval		@c 0 - @a kv is not an array
+ * @exception BUNDLE_ERROR_NONE	Success
+ * @exception BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @pre		@a kv must be a valid bundle_keyval_t object.
+ * @see		bundle_foreach()
  */
 API int bundle_keyval_type_is_array(bundle_keyval_t *kv);
 
-
 /**
- * @brief	Determine if kv is measurable type or not.
- * @pre		kv must be a valid bundle_keyval_t object.
- * @post	None
- * @see		bundle_foreach
+ * @internal
+ * @brief Determines whether the type of a key-value pair is measurable.
+ * @since_tizen 2.3
+ * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
  * @param[in]	kv	A bundle_keyval_t object
- * @return		Operation result
- * @retval		1	kv is an measurable.
- * @retval		0	kv is not an measurable.
- * @remark
+ * @return		The operation result
+ * @retval		@c 1 - @a kv is an measurable
+ * @retval		@c 0 - @a kv is not an measurable
+ * @exception BUNDLE_ERROR_NONE	Success
+ * @exception BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @pre		@a kv must be a valid bundle_keyval_t object.
+ * @see		bundle_foreach()
  */
 API int bundle_keyval_type_is_measurable(bundle_keyval_t *kv);
 
-
 /**
- * @brief	Get value and size of the value from kv of basic type.
- * @pre		kv must be a valid bundle_keyval_t object.
- * @post	val, size are set.
- * @see		bundle_foreach
+ * @brief Gets the value and size of the value from a key-value pair of basic type.
+ * @since_tizen 2.3
+ * @remarks	You must not free @a val.
  * @param[in]	kv		A bundle_keyval_t object
- * @param[out]	val		Value
- * @param[out]	size	Size of val
- * @return	Operation result
- * @retval	0	Success
- * @remark	Do not free val.
+ * @param[out]	val		The value
+ * @param[out]	size	The size of @a val
+ * @return	The operation result
+ * @retval BUNDLE_ERROR_NONE	Success
+ * @retval BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @pre		@a kv must be a valid bundle_keyval_t object.
+ * @post	@a val and @a size are set.
+ * @see		bundle_foreach()
  */
 API int bundle_keyval_get_basic_val(bundle_keyval_t *kv, void **val, size_t *size);
 
-
 /**
- * @brief	Get value array, length of array, and size of each array item
- * @pre		kv must be a valid bundle_keyval_t object.
- * @post	array_val, array_len, array_item_size are set.
- * @see		bundle_foreach
+ * @brief Gets the value array, length of the array, and size of each array item.
+ * @since_tizen 2.3
  * @param[in]	kv		A bundle_keyval_t object
- * @param[out]	array_val	Array pointer of values
- * @param[out]	array_len	Length of array_val
- * @param[out]	array_element_size	Array of size of each array element
- * @return	Operation result
- * @retval	0	Success
- * @retval	0	Failure
- * @remark
+ * @param[out]	array_val	The array pointer of values
+ * @param[out]	array_len	The length of @a array_val
+ * @param[out]	array_element_size	The array of size of each array element
+ * @return	The operation result
+ * @retval BUNDLE_ERROR_NONE	Success
+ * @retval BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @pre		@a kv must be a valid bundle_keyval_t object.
+ * @post	@a array_val, @a array_len, @a array_item_size are set.
+ * @see		bundle_foreach()
  */
 API int bundle_keyval_get_array_val(bundle_keyval_t *kv, void ***array_val, unsigned int *array_len, size_t **array_element_size);
 
-
 /**
- * @brief	Encode bundle to bundle_raw format (uses base64 format)
- * @pre			b must be a valid bundle object.
- * @post		None
- * @see			None
- * @param[in]	b	bundle object
- * @param[out]	r	returned bundle_raw data(byte data)
- *					r MUST BE FREED by free(r).
- * @param[out]	len	size of r (in bytes)
- * @return	size of raw data
- * @retval		0		Success
- * @retval		-1		Failure
- * @remark		None
+ * @brief Encodes a bundle to the bundle_raw format (uses base64 format).
+ * @since_tizen 2.3
+ * @param[in]	b	The bundle object
+ * @param[out]	r	The returned bundle_raw data(byte data)
+ *					@a r MUST BE FREED by free(r)
+ * @param[out]	len	The size of @a r (in bytes)
+ * @return	The size of the raw data
+ * @retval BUNDLE_ERROR_NONE	Success
+ * @retval BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @pre			@a b must be a valid bundle object.
  @code
  #include <bundle.h>
  bundle *b = bundle_create(); // Create new bundle object
- bundle_add(b, "foo_key", "bar_val"); // add a key-val pair
+ bundle_add_str(b, "foo_key", "bar_val"); // add a key-val pair
  bundle_raw *r;
  int len;
  bundle_encode(b, &r, &len);	// encode b
 
- bundle_free_encoded_rawdata(r);
  bundle_free(b);
  @endcode
  */
 API int				bundle_encode(bundle *b, bundle_raw **r, int *len);
 
 /**
- * @brief	Free encoded rawdata from memory
- * @pre		r is a valid rawdata generated by bundle_encode().
- * @post	None
- * @see		bundle_encode
- * @param[in]	r	is a rawdata
- * @return		Operation result
- * @retval		0	Success
- * @retval		-1	Failure
- * @reamark 	None
+ * @internal
+ * @brief Frees the encoded rawdata.
+ * @since_tizen 2.3
+ * @param[in]	r	The rawdata
+ * @return		The operation result
+ * @retval BUNDLE_ERROR_NONE	Success
+ * @retval BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @pre		@a r is a valid rawdata generated by bundle_encode().
+ * @see		bundle_encode()
  */
 API int				bundle_free_encoded_rawdata(bundle_raw **r);
 
 /**
- * @brief	deserialize bundle_raw, and get bundle object
- * @pre			b must be a valid bundle object.
- * @post		None
- * @see			None
- * @param[in]	r	bundle_raw data to be converted to bundle object
- * @param[in]	len	size of r
- * @return	bundle object
- * @retval	NULL	Failure
- * @remark		None
+ * @brief Deserializes bundle_raw and gets the bundle object.
+ * @since_tizen 2.3
+ * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
+ * @param[in]	r	The bundle_raw data to be converted to bundle object
+ * @param[in]	len	The size of @a r
+ * @return	The bundle object
+ * @retval	@c NULL - Failure
+ * @exception BUNDLE_ERROR_NONE	Success
+ * @exception BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @pre			@a b must be a valid bundle object.
  @code
  #include <bundle.h>
  bundle *b = bundle_create(); // Create new bundle object
- bundle_add(b, "foo_key", "bar_val"); // add a key-val pair
+ bundle_add_str(b, "foo_key", "bar_val"); // add a key-val pair
 
  bundle_raw *encoded_b;
  int len;
@@ -563,46 +578,47 @@ API int				bundle_free_encoded_rawdata(bundle_raw **r);
 API bundle *		bundle_decode(const bundle_raw *r, const int len);
 
 /**
- * @brief	Encode bundle to bundle_raw format
- * @pre			b must be a valid bundle object.
- * @post		None
- * @see			None
- * @param[in]	b	bundle object
- * @param[out]	r	returned bundle_raw data(byte data)
- *					r MUST BE FREED by free(r).
- * @param[out]	len	size of r (in bytes)
- * @return	size of raw data
- * @retval		0		Success
- * @retval		-1		Failure
- * @remark		None
+ * @internal
+ * @brief Encodes a bundle to the bundle_raw format.
+ * @since_tizen 2.3
+ * @param[in]	b	The bundle object
+ * @param[out]	r	The returned bundle_raw data(byte data)
+ *					@a r MUST BE FREED by free(r)
+ * @param[out]	len	The size of @a r (in bytes)
+ * @return	The size of the raw data
+ * @retval BUNDLE_ERROR_NONE	Success
+ * @retval BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @retval BUNDLE_ERROR_OUT_OF_MEMORY	Out of memory
+ * @pre			@a b must be a valid bundle object.
  @code
  #include <bundle.h>
  bundle *b = bundle_create(); // Create new bundle object
- bundle_add(b, "foo_key", "bar_val"); // add a key-val pair
+ bundle_add_str(b, "foo_key", "bar_val"); // add a key-val pair
  bundle_raw *r;
  int len;
  bundle_encode_raw(b, &r, &len);	// encode b
 
- bundle_free_encoded_rawdata(r);
  bundle_free(b);
  @endcode
  */
 API int				bundle_encode_raw(bundle *b, bundle_raw **r, int *len);
 
 /**
- * @brief	deserialize bundle_raw, and get bundle object
- * @pre			b must be a valid bundle object.
- * @post		None
- * @see			None
- * @param[in]	r	bundle_raw data to be converted to bundle object
- * @param[in]	len	size of r
- * @return	bundle object
- * @retval	NULL	Failure
- * @remark		None
+ * @internal
+ * @brief Deserializes bundle_raw and gets a bundle object.
+ * @since_tizen 2.3
+ * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
+ * @param[in]	r	The bundle_raw data to be converted to a bundle object
+ * @param[in]	len	The size of @a r
+ * @return	The bundle object
+ * @retval	@c NULL - Failure
+ * @exception BUNDLE_ERROR_NONE	Success
+ * @exception BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @pre			@a b must be a valid bundle object.
  @code
  #include <bundle.h>
  bundle *b = bundle_create(); // Create new bundle object
- bundle_add(b, "foo_key", "bar_val"); // add a key-val pair
+ bundle_add_str(b, "foo_key", "bar_val"); // add a key-val pair
 
  bundle_raw *encoded_b;
  int len;
@@ -619,31 +635,36 @@ API int				bundle_encode_raw(bundle *b, bundle_raw **r, int *len);
 API bundle *		bundle_decode_raw(const bundle_raw *r, const int len);
 
 /**
- * @brief	Export bundle to argv
- * @pre		b is a valid bundle object.
- * @post	argv is a pointer of newly allocated memory. It must be freed. 
- *          Each item of argv points the string in the bundle object b. If b is freed, argv will have garbage pointers. DO NOT FREE b BEFORE ACCESSING argv!!
- * @see		bundle_import_from_argv
- * @param[in]	b	bundle object
- * @param[out]	argv	Pointer of string array.
- *                      This array has NULL values for first and last item.
- *                      First NULL is for argv[0], and last NULL is a terminator for execv().
- * @return	Number of item in argv. This value is equal to actual count of argv - 1. (Last NULL terminator is not counted.)
- * @retval	-1		Function failure. Check errno to get the reason.
- * @remark	None
+ * @internal
+ * @brief Exports bundle to @a argv.
+ * @since_tizen 2.3
+ * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
+ * @param[in]	b	The bundle object
+ * @param[out]	argv	The pointer of the string array; \n
+ *                      This array has NULL values for the first and last item; \n
+ *                      First NULL is for argv[0], and last NULL is a terminator for execv() \n
+ * @return	The number of item in @a argv. This value is equal to the actual count of argv - 1. (Last NULL terminator is not counted.)
+ * @retval	@c -1 - Failure
+ * @exception BUNDLE_ERROR_NONE	Success
+ * @exception BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @exception BUNDLE_ERROR_OUT_OF_MEMORY	Out of memory
+ * @pre		@a b is a valid bundle object.
+ * @post	@a argv is a pointer of newly allocated memory. It must be freed.
+ *          Each item of @a argv points to the string in the bundle object @a b. If @a b is freed, @a argv will have garbage pointers. DO NOT FREE @a b BEFORE ACCESSING @a argv!!
+ * @see		bundle_import_from_argv()
  @code
  #include <bundle.h>
  bundle *b = bundle_create(); // Create new bundle object
- bundle_add(b, "foo_key", "bar_val"); // add a key-val pair
+ bundle_add_str(b, "foo_key", "bar_val"); // add a key-val pair
 
  int argc = 0;
  char **argv = NULL;
  argc = bundle_export_to_argv(b, &argv);	// export to argv
  if(0 > argc) error("export failure");
- 
+
  int i;
  for(i=0; i < argc; i++) {
-   printf("%s\n", argv[i]);		// print argv 
+   printf("%s\n", argv[i]);		// print argv
  }
  bundle_free_exported_argv(argc, argv);	// argv must be freed after being used.
 
@@ -653,20 +674,21 @@ API bundle *		bundle_decode_raw(const bundle_raw *r, const int len);
 API int				bundle_export_to_argv(bundle *b, char ***argv);
 
 /**
- * @brief	Free exported argv
- * @pre		argv is a valid string array generated from bundle_export_to_argv().
- * @post	None
- * @see		bundle_export_to_argv
- * @param[in]	argc	number of args, which is the return value of bundle_export_to_argv().
- * @param[in]	argv array from bundle_export_to_argv().
- * @return	Operation result.
- * @retval	0	on success
- * @retval	-1	on failure
- * @remark	You must not use this API when you use global argv.
+ * @internal
+ * @brief Frees the exported @a argv.
+ * @since_tizen 2.3
+ * @remarks	You must not use this API when you use global @a argv.
+ * @param[in]	argc	The number of args, which is the return value of bundle_export_to_argv()
+ * @param[in]	argv The array from bundle_export_to_argv()
+ * @return	The operation result
+ * @retval BUNDLE_ERROR_NONE	Success
+ * @retval BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @pre		@a argv is a valid string array generated from bundle_export_to_argv().
+ * @see		bundle_export_to_argv()
  @code
  bundle *b = bundle_create();
  bundle_add_str(b, "foo", "bar");
- 
+
  int argc = 0;
  char **argv = NULL;
  argc = bundle_export_to_argv(b, &argv);
@@ -674,7 +696,7 @@ API int				bundle_export_to_argv(bundle *b, char ***argv);
 
  // Use argv...
 
- bundle_free_export_argv(argc, argv);
+ bundle_free_exported_argv(argc, argv);
  argv = NULL;
 
  bundle_free(b);
@@ -683,15 +705,20 @@ API int				bundle_export_to_argv(bundle *b, char ***argv);
 API int				bundle_free_exported_argv(int argc, char ***argv);
 
 /**
- * @brief	import a bundle from argv
- * @pre		argv is a valid string array, which is created by bundle_export_to_argv().
- * @post	Returned bundle b must be freed.
- * @see		bundle_export_to_argv
- * @param[in]	argc	argument count
- * @param[in]	argv	argument vector
- * @return	New bundle object
- * @retval	NULL	Function failure
- * @remark	None
+ * @internal
+ * @brief Imports a bundle from @a argv.
+ * @since_tizen 2.3
+ * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
+ * @param[in]	argc	The argument count
+ * @param[in]	argv	The argument vector
+ * @return	The new bundle object
+ * @retval	@c NULL - Failure
+ * @exception BUNDLE_ERROR_NONE	Success
+ * @exception BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @exception BUNDLE_ERROR_OUT_OF_MEMORY	Out of memory
+ * @pre		@a argv is a valid string array, which is created by bundle_export_to_argv().
+ * @post	The returned bundle @a b must be freed.
+ * @see		bundle_export_to_argv()
  @code
  #include <bundle.h>
 
@@ -707,21 +734,18 @@ API int				bundle_free_exported_argv(int argc, char ***argv);
 API bundle *		bundle_import_from_argv(int argc, char **argv);
 
 /**
- * @brief		Add a string type key-value pair into bundle. 
- * @pre			b must be a valid bundle object.
- * @post		None
+ * @brief Adds a string type key-value pair into a bundle.
+ * @since_tizen 2.3
+ * @param[in]	b	The bundle object
+ * @param[in]	key	The key
+ * @param[in]	str The string type value
+ * @return		The operation result
+ * @retval BUNDLE_ERROR_NONE	Success
+ * @retval BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @retval BUNDLE_ERROR_KEY_EXISTS	Key already exists
+ * @retval BUNDLE_ERROR_OUT_OF_MEMORY	Out of memory
+ * @pre			@a b must be a valid bundle object.
  * @see			bundle_get_str()
- * @param[in]	b	bundle object
- * @param[in]	key	key
- * @param[in]	str string type value
- * @return		Operation result
- * @retval		0	success
- * @retval		-1	failure
- *
- * @remark		When -1 is returned, errno is set to one of the following values; \n
-  				EKEYREJECTED : key is rejected (NULL or sth) \n
- 				EPERM : key is already exist, not permitted to overwrite value \n
-  				EINVAL : b or val is not valid (NULL or sth) \n
  @code
  #include <bundle.h>
  bundle *b = bundle_create(); // Create new bundle object
@@ -733,23 +757,19 @@ API bundle *		bundle_import_from_argv(int argc, char **argv);
 API int bundle_add_str(bundle *b, const char *key, const char *str);
 
 /**
- * @brief		Set a value of string array element
- * @pre			b must be a valid bundle object.
- * @post		None
+ * @internal
+ * @brief Sets a value of string array elements.
+ * @since_tizen 2.3
+ * @param[in]	b	The bundle object
+ * @param[in]	key	The key
+ * @param[in]	idx The index of the array element to be changed
+ * @param[in]	val The string type value; if @c NULL, an empty array is created; you can change an item with
+ * @return		The operation result
+ * @retval BUNDLE_ERROR_NONE	Success
+ * @retval BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @pre			@a b must be a valid bundle object.
  * @see			bundle_add_str_array()
  * @see			bundle_get_str_array()
- * @param[in]	b	bundle object
- * @param[in]	key	key
- * @param[in]	idx index of array element to be changed
- * @param[in]	val string type value. If NULL, empty array is created. You can change an item with 
- * @return		Operation result
- * @retval		0	success
- * @retval		-1	failure
- *
- * @remark		When -1 is returned, errno is set to one of the following values; \n
-  				EKEYREJECTED : key is rejected (NULL or sth) \n
- 				EPERM : key is already exist, not permitted to overwrite value \n
-  				EINVAL : b or val is not valid (NULL or sth) \n
  @code
  #include <bundle.h>
  bundle *b = bundle_create();
@@ -770,51 +790,48 @@ API int bundle_add_str(bundle *b, const char *key, const char *str);
 API int bundle_set_str_array_element(bundle *b, const char *key, const unsigned int idx, const char *val);
 
 /**
- * @brief		Add a byte type key-value pair into bundle. 
- * @pre			b must be a valid bundle object.
- * @post		None
+ * @brief Adds a byte type key-value pair into a bundle.
+ * @since_tizen 2.3
+ * @param[in]	b	The bundle object
+ * @param[in]	key	The key
+ * @param[in]	byte The string type value
+ * @param[in]	size The size of @a byte
+ * @return		The operation result
+ * @retval BUNDLE_ERROR_NONE	Success
+ * @retval BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @retval BUNDLE_ERROR_KEY_EXISTS	Key already exists
+ * @retval BUNDLE_ERROR_OUT_OF_MEMORY	Out of memory
+ * @pre			@a b must be a valid bundle object.
  * @see			bundle_get_byte()
- * @param[in]	b	bundle object
- * @param[in]	key	key
- * @param[in]	byte string type value
- * @param[in]	size size of byte
- * @return		Operation result
- * @retval		0	success
- * @retval		-1	failure
- *
- * @remark		When -1 is returned, errno is set to one of the following values; \n
-  				EKEYREJECTED : key is rejected (NULL or sth) \n
- 				EPERM : key is already exist, not permitted to overwrite value \n
-  				EINVAL : b or val is not valid (NULL or sth) \n
  @code
  #include <bundle.h>
  bundle *b = bundle_create(); // Create new bundle object
  bundle_add_byte(b, "foo", "bar\0", 4); // add a key-val pair
 
+ int number = 12345;
+ bundle_add_byte(b, "number", &number, sizeof(int));
+
  bundle_free(b);
  @endcode
  */
-
 API int bundle_add_byte(bundle *b, const char *key, const void *byte, const size_t size);
 
 /**
- * @brief		Add a byte array type key-value pair into bundle. 
- * @pre			b must be a valid bundle object.
- * @post		None
- * @see			bundle_get_str_array()
+ * @internal
+ * @brief Adds a byte array type key-value pair into a bundle.
+ * @since_tizen 2.3
+ * @param[in]	b	The bundle object
+ * @param[in]	key	The key
+ * @param[in]	byte_array  Not used
+ * @param[in]	len The length of the array to be created
+ * @return		The operation result
+ * @retval BUNDLE_ERROR_NONE	Success
+ * @retval BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @retval BUNDLE_ERROR_KEY_EXISTS	Key already exists
+ * @retval BUNDLE_ERROR_OUT_OF_MEMORY	Out of memory
+ * @pre			@a b must be a valid bundle object.
+ * @see			bundle_get_byte_array()
  * @see			bundle_set_byte_array_element()
- * @param[in]	b	bundle object
- * @param[in]	key	key
- * @param[in]	byte_array  Not used.
- * @param[in]	len Length of array to be created
- * @return		Operation result
- * @retval		0	success
- * @retval		-1	failure
- *
- * @remark		When -1 is returned, errno is set to one of the following values; \n
-  				EKEYREJECTED : key is rejected (NULL or sth) \n
- 				EPERM : key is already exist, not permitted to overwrite value \n
-  				EINVAL : b or val is not valid (NULL or sth) \n
  @code
  #include <bundle.h>
  bundle *b = bundle_create();
@@ -830,28 +847,26 @@ API int bundle_add_byte(bundle *b, const char *key, const void *byte, const size
 API int bundle_add_byte_array(bundle *b, const char *key, void **byte_array, const unsigned int len);
 
 /**
- * @brief		Set a value of byte array element
- * @pre			b must be a valid bundle object.
- * @post		None
- * @see			bundle_add_str_array()
- * @see			bundle_get_str_array()
- * @param[in]	b	bundle object
- * @param[in]	key	key
- * @param[in]	idx index of array element to be changed
- * @param[in]	val string type value. If NULL, empty array is created. You can change an item with 
- * @param[in]	size Size of value in byte
+ * @internal
+ * @brief Sets the value of the byte array element.
+ * @since_tizen 2.3
+ * @param[in]	b	The bundle object
+ * @param[in]	key	The key
+ * @param[in]	idx The index of the array element to be changed
+ * @param[in]	val The string type value; if @c NULL, an empty array is created; you can change an item with
+ * @param[in]	size The size of the value in bytes
  * @return		Operation result
- * @retval		0	success
- * @retval		-1	failure
- *
- * @remark		When -1 is returned, errno is set to one of the following values; \n
-  				EKEYREJECTED : key is rejected (NULL or sth) \n
- 				EPERM : key is already exist, not permitted to overwrite value \n
-  				EINVAL : b or val is not valid (NULL or sth) \n
+ * @retval BUNDLE_ERROR_NONE	Success
+ * @retval BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @retval BUNDLE_ERROR_KEY_NOT_AVAILABLE	Key not available
+ * @pre			@a b must be a valid bundle object.
+ * @see			bundle_add_byte_array()
+ * @see			bundle_get_byte_array()
  @code
  #include <bundle.h>
  bundle *b = bundle_create();
  bundle_add_byte_array(b, "foo", NULL, 3); // add a key-val pair
+
  bundle_set_byte_array_element(b, "foo", 0, "aaa\0", 4);
  bundle_set_byte_array_element(b, "foo", 1, "bbb\0", 4);
  bundle_set_byte_array_element(b, "foo", 2, "ccc\0", 4);
@@ -859,7 +874,7 @@ API int bundle_add_byte_array(bundle *b, const char *key, void **byte_array, con
  unsigned char **byte_array = NULL;
  int len_byte_array = 0;
 
- byte_array=bundle_get_str_array(b, "foo", &len_byte_array);
+ bundle_get_byte_array(b, "foo", &byte_array, &len_byte_array, &size_byte_array);
  // byte_array = { "aaa\0", "bbb\0", "ccc\0" }, and len_byte_array = 3
 
  bundle_free(b);
@@ -868,21 +883,18 @@ API int bundle_add_byte_array(bundle *b, const char *key, void **byte_array, con
 API int bundle_set_byte_array_element(bundle *b, const char *key, const unsigned int idx, const void *val, const size_t size);
 
 /**
- * @brief		Get string value from key
- * @pre			b must be a valid bundle object.
- * @post		None
+ * @brief Gets the string value with the given key.
+ * @since_tizen 2.3
+ * @remarks		You must not free str!
+ * @param[in]	b	The bundle object
+ * @param[in]	key	The key
+ * @param[out]	str The returned value
+ * @return		The operation result
+ * @retval BUNDLE_ERROR_NONE	Success
+ * @retval BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @retval BUNDLE_ERROR_KEY_NOT_AVAILABLE	Key not available
+ * @pre			@a b must be a valid bundle object.
  * @see			bundle_add_str()
- * @param[in]	b	bundle object
- * @param[in]	key	key
- * @param[out]	str returned value
- * @return		Operation result
- * @retval		0 on success
- * @retval		-1 on failure
- * @remark		Do not free str!
-  				When -1 is returned, errno is set to one of the following values; \n
-  				EINVAL : b is invalid \n
-  				ENOKEY : No key exists \n
-  				EKEYREJECTED : invalid key (NULL or sth) \n
  @code
  #include <bundle.h>
  bundle *b = bundle_create(); // Create new bundle object
@@ -898,54 +910,55 @@ API int bundle_set_byte_array_element(bundle *b, const char *key, const unsigned
 API int bundle_get_str(bundle *b, const char *key, char **str);
 
 /**
- * @brief		Get byte value from key
- * @pre			b must be a valid bundle object.
- * @post		None
+ * @brief Gets the byte value with the given key.
+ * @since_tizen 2.3
+ * @remarks		You must not free @a byte!
+ * @param[in]	b	The bundle object
+ * @param[in]	key	The key
+ * @param[out]	byte The returned value
+ * @param[out]	size The size of the byte
+ * @return		The operation result
+ * @retval BUNDLE_ERROR_NONE	Success
+ * @retval BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @retval BUNDLE_ERROR_KEY_NOT_AVAILABLE	Key not available
+ * @pre			@a b must be a valid bundle object.
  * @see			bundle_add_byte()
- * @param[in]	b	bundle object
- * @param[in]	key	key
- * @param[out]	byte returned value
- * @param[out]	size Size of byte
- * @return		Operation result
- * @retval		0 on success
- * @retval		-1 on failure
- * @remark		Do not free str!
-  				When -1 is returned, errno is set to one of the following values; \n
-  				EINVAL : b is invalid \n
-  				ENOKEY : No key exists \n
-  				EKEYREJECTED : invalid key (NULL or sth) \n
  @code
  #include <bundle.h>
  bundle *b = bundle_create(); // Create new bundle object
- bundle_add_byte(b, "foo", "bar\0", 4); // add a key-val pair
+ bundle_add_byte(b, "foo", "bar\0", 4); // add string to bundle
+ int number = 12345;
+ bundle_add_byte(b, "number", (const void**)&number, sizeof(int)); // add integer to bundle
 
  unsigned char *v = NULL;
- bundle_get_str(b, "foo", &v);	// v = "bar\0"
+ size_t v_size;
+ bundle_get_byte(b, "foo", (void**)&v, &v_size);    // v = "bar\0"
+ int *n = NULL;
+ size_t n_size;
+ bundle_get_byte(b, "number", (void**)&n, &n_size); // number = 12345
 
- bundle_free(b);	// After freeing b, v becomes a dangling pointer.
+ bundle_free(b);	// After freeing b, v and n becomes a dangling pointer.
  @endcode
  */
 API int bundle_get_byte(bundle *b, const char *key, void **byte, size_t *size);
 
 /**
- * @brief		Get byte array value from key
- * @pre			b must be a valid bundle object.
- * @post		None
- * @see			bundle_add_str_array()
- * @see			bundle_set_str_array_element()
- * @param[in]	b	bundle object
- * @param[in]	key	key
- * @param[out]	byte_array returned value
- * @param[out]	len	array length
- * @param[out]	array_element_size	an array of sizes of each byte_array element
- * @return		Operation result
- * @retval		0 on success
- * @retval		-1 on failure
- * @remark		Do not free str!
-  				When -1 is returned, errno is set to one of the following values; \n
-  				EINVAL : b is invalid \n
-  				ENOKEY : No key exists \n
-  				EKEYREJECTED : invalid key (NULL or sth) \n
+ * @internal
+ * @brief Gets the byte array value with the given key.
+ * @since_tizen 2.3
+ * @remarks		You must not free str!
+ * @param[in]	b	The bundle object
+ * @param[in]	key	The key
+ * @param[out]	byte_array The returned value
+ * @param[out]	len	The array length
+ * @param[out]	array_element_size	an array of sizes of each @a byte_array element
+ * @return		The operation result
+ * @retval BUNDLE_ERROR_NONE	Success
+ * @retval BUNDLE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @retval BUNDLE_ERROR_KEY_NOT_AVAILABLE	Key not available
+ * @pre			@a b must be a valid bundle object.
+ * @see			bundle_add_byte_array()
+ * @see			bundle_set_byte_array_element()
  @code
  #include <bundle.h>
  bundle *b = bundle_create();
@@ -958,7 +971,7 @@ API int bundle_get_byte(bundle *b, const char *key, void **byte, size_t *size);
  int len_byte_array = 0;
  size_t *size_byte_array = NULL;
 
- byte_array = bundle_get_str_array(b, "foo", &len_byte_array, &size_byte_array);
+ bundle_get_byte_array(b, "foo", &byte_array, &len_byte_array, &size_byte_array);
  // byte_array = { "aaa\0", "bbb\0", "ccc\0" }, len_byte_array = 3, and size_byte_array = { 4, 4, 4 }
 
  bundle_free(b);

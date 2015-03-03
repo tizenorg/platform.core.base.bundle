@@ -8,5 +8,6 @@ includedir=${prefix}/include
 Name: bundle
 Description: Simple string key/val dictionary library
 Version: @VERSION@
+Requires: capi-base-common
 Libs: -L${libdir} -lbundle
 Cflags: -I${includedir}

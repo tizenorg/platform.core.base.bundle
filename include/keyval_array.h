@@ -50,3 +50,4 @@ size_t keyval_array_decode(void *byte, keyval_array_t **kva);
 int keyval_array_copy_array(keyval_array_t *kva, void **array_val, unsigned int array_len, size_t (*measure_val_len)(void * val));
 int keyval_array_get_data(keyval_array_t *kva, int *type,void ***array_val, unsigned int *len, size_t **array_element_size);
 int keyval_array_set_element(keyval_array_t *kva, int idx, void *val, size_t size);
+int keyval_array_is_idx_valid(keyval_array_t *kva, int idx);
