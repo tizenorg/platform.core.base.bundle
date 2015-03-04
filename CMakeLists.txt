@@ -1,6 +1,13 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(bundle C)
-set (VERSION "0.1.31")
+
+IF("${VERSION}" STREQUAL "")
+	MESSAGE(FATAL_ERROR "VERSION is not defined")
+ENDIF()
+STRING(REGEX MATCH "^[0-9]+" VERSION_MAJOR ${VERSION})
+IF("${VERSION_MAJOR}" STREQUAL "")
+	MESSAGE(FATAL_ERROR "can't get VERSION_MAJOR")
+ENDIF()
 
 ### Required packages
 INCLUDE(FindPkgConfig)
@@ -21,7 +28,7 @@ add_library(bundle SHARED
 		src/keyval.c
 		src/keyval_array.c
 		)
-set_target_properties(bundle PROPERTIES SOVERSION "0")
+set_target_properties(bundle PROPERTIES SOVERSION ${VERSION_MAJOR})
 set_target_properties(bundle PROPERTIES VERSION "${VERSION}")
 message(STATUS "Version from debian/changelog: ${VERSION},  Major version: ${VERSION_MAJOR}")
 target_link_libraries(bundle ${pkgs_LDFLAGS})

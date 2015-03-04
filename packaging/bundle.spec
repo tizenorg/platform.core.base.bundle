@@ -27,7 +27,7 @@ Simple string key-val dictionary ADT (devel)
 cp %{SOURCE1001} .
 
 %build
-%cmake .
+%cmake -DVERSION=%{version} .
 %__make %{?_smp_mflags}
 
 %install
