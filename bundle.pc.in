@@ -1,6 +1,6 @@
 # Package Information for pkg-config
 
-prefix=/usr
+prefix=@PREFIX@
 exec_prefix=${prefix}
 libdir=@LIB_INSTALL_DIR@
 includedir=${prefix}/include
