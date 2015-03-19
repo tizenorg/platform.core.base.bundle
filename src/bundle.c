@@ -517,6 +517,8 @@ bundle_decode(const bundle_raw *r, const int data_size)
 	bundle *b;
 	bundle_raw *p_r;
 	unsigned char *d_str;
+	gint state = 0;
+	guint save = 0;
 	unsigned int d_len_raw;
 	unsigned char *d_r;
 	unsigned int d_len;
@@ -534,8 +536,25 @@ bundle_decode(const bundle_raw *r, const int data_size)
 		return NULL;
 	}
 
-	/* base 64 decode of input string*/
-	d_str = g_base64_decode((char *)r, &d_len_raw);
+	/* base 64 decode of input string
+	 * Since base64 encodes 3 bytes in 4 chars (+3 may be needed in case of non-zero state)
+	 * refer to: https://developer.gnome.org/glib/stable/glib-Base64-Encoding.html#g-base64-decode-step
+	 */
+	d_str = malloc((data_size / 4) * 3 + 3);
+	if (unlikely(NULL == d_str)) {
+		set_last_result(BUNDLE_ERROR_OUT_OF_MEMORY);
+		free(extract_cksum);
+		return NULL;
+	}
+
+	d_len_raw = g_base64_decode_step((char *)r, data_size, d_str, &state, &save);
+	if (d_len_raw < CHECKSUM_LENGTH) {
+		set_last_result(BUNDLE_ERROR_INVALID_PARAMETER);
+		free(d_str);
+		free(extract_cksum);
+		return NULL;
+	}
+
 	/*extract checksum from the received string */
 	strncpy(extract_cksum, (const char *)d_str, CHECKSUM_LENGTH);
 	/* compute checksum for the data */
