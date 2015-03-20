@@ -236,7 +236,7 @@ API int				bundle_del(bundle *b, const char* key);
 /**
  * @brief Gets a string array from a given key.
  * @since_tizen 2.3
- * @remarks 		You MUST free or modify the returned string!
+ * @remarks 		You MUST NOT free or modify the returned string!
  * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
  * @param[in]	b	The bundle object
  * @param[in]	key	The key
@@ -269,7 +269,7 @@ API const char** bundle_get_str_array(bundle *b, const char *key,int *len);
  * @internal
  * @brief Gets a value with a given key.
  * @since_tizen 2.3
- * @remarks		You MUST free or modify the returned string!
+ * @remarks		You MUST NOT free or modify the returned string!
  * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
  * @param[in]	b	The bundle object
  * @param[in]	key	The key
