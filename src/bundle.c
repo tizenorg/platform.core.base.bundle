@@ -27,6 +27,7 @@
  */
 
 #include "bundle.h"
+#include "bundle_internal.h"
 #include "keyval.h"
 #include "keyval_array.h"
 #include "keyval_type.h"

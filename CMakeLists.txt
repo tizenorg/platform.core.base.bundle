@@ -43,12 +43,13 @@ CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/bundle.pc.in ${CMAKE_BINARY_DIR}/bundle.pc @O
 install(TARGETS bundle
     DESTINATION ${LIB_INSTALL_DIR}
 	)
-install(FILES 
-	${CMAKE_SOURCE_DIR}/include/bundle.h 
-	${CMAKE_SOURCE_DIR}/include/SLP_bundle_PG.h 
+install(FILES
+	${CMAKE_SOURCE_DIR}/include/bundle.h
+	${CMAKE_SOURCE_DIR}/include/bundle_internal.h
+	${CMAKE_SOURCE_DIR}/include/SLP_bundle_PG.h
 	DESTINATION include/
 		)
-install(FILES ${CMAKE_BINARY_DIR}/bundle.pc 
+install(FILES ${CMAKE_BINARY_DIR}/bundle.pc
     DESTINATION ${LIB_INSTALL_DIR}/pkgconfig/
 		)
 

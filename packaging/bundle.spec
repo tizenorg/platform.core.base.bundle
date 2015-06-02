@@ -48,6 +48,7 @@ cp %{SOURCE1001} .
 %manifest %{name}.manifest
 %defattr(-,root,root,-)
 %{_includedir}/bundle.h
+%{_includedir}/bundle_internal.h
 %{_includedir}/SLP_bundle_PG.h
 %{_libdir}/pkgconfig/bundle.pc
 %{_libdir}/libbundle.so
