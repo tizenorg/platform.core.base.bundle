@@ -63,8 +63,10 @@ _bundle_find_kv(bundle *b, const char *key)
 
 	kv = b->kv_head;
 	while (kv != NULL) {
-		if (0 == strcmp(key, kv->key))
+		if (0 == strcmp(key, kv->key)) {
+			set_last_result(BUNDLE_ERROR_NONE);
 			return kv;
+		}
 		kv = kv->next;
 	}
 	/* Not found */
