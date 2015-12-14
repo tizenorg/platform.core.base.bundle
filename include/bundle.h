@@ -118,8 +118,6 @@ typedef void (*bundle_iterator_t) (
 		void *user_data
 );
 
-#include "bundle_internal.h"
-
 /**
  * @brief Creates a bundle object.
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
