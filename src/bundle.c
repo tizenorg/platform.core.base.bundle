@@ -802,7 +802,7 @@ bundle_export_to_argv(bundle *b, char ***argv)
 	struct _argv_idx vi;
 	vi.argc = argc;
 	vi.argv = *argv;
-	vi.idx = 2; 			 /* start from index 2*/
+	vi.idx = 2;				/* start from index 2*/
 	vi.argv[1] = TAG_IMPORT_EXPORT_CHECK;	/* set argv[1] as encoded*/
 	/*BUNDLE_LOG_PRINT("\nargument 1 is %s",vi.argv[1]);*/
 
@@ -855,9 +855,9 @@ bundle_import_from_argv(int argc, char **argv)
 		/*BUNDLE_LOG_PRINT("\nit is not encoded");*/
 		int idx;
 		/*start idx from one as argv[1] is user given argument*/
-		for (idx = 1; idx + 1 < argc; idx = idx + 2) {
+		for (idx = 1; idx + 1 < argc; idx = idx + 2)
 			bundle_add(b, argv[idx], argv[idx + 1]);
-		}
+
 		return b;
 	}
 	/*BUNDLE_LOG_PRINT("\nit is encoded");*/

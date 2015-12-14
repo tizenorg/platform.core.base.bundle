@@ -265,9 +265,9 @@ keyval_array_get_encoded_size(keyval_array_t *kva)
 {
 	size_t sum_array_element_size = 0;
 	int i;
-	for (i = 0; i < kva->len; i++) {
+	for (i = 0; i < kva->len; i++)
 		sum_array_element_size += kva->array_element_size[i];
-	}
+
 	size_t encoded_size
 		= sizeof(size_t) /* total size */
 		+ sizeof(int)    /* type */
@@ -293,9 +293,8 @@ keyval_array_encode(keyval_array_t *kva, void **byte, size_t *byte_len)
 	static const unsigned int sz_len = sizeof(int);
 	size_t sz_array_element_size = kva->len * sizeof(size_t);
 	size_t sz_array_val = 0;
-	for (i = 0; i < kva->len; i++) {
+	for (i = 0; i < kva->len; i++)
 		sz_array_val += kva->array_element_size[i];
-	}
 
 	/* Allocate memory */
 	*byte_len = keyval_array_get_encoded_size(kva);
