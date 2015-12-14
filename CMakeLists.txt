@@ -52,8 +52,3 @@ install(FILES
 install(FILES ${CMAKE_BINARY_DIR}/bundle.pc
     DESTINATION ${LIB_INSTALL_DIR}/pkgconfig/
 		)
-
-
-### Test
-add_subdirectory(test)
-
