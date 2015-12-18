@@ -567,6 +567,7 @@ bundle_decode(const bundle_raw *r, const int data_size)
 	 * string and computed from the data
 	 */
 	if (strcmp(extract_cksum, compute_cksum) != 0) {
+		free(d_str);
 		free(extract_cksum);
 		g_free(compute_cksum);
 		return NULL;
@@ -576,6 +577,12 @@ bundle_decode(const bundle_raw *r, const int data_size)
 
 	/* re-construct bundle */
 	b = bundle_create();
+	if (b == NULL) {
+		free(d_str);
+		free(extract_cksum);
+		g_free(compute_cksum);
+		return NULL;
+	}
 
 	p_r = (bundle_raw *)d_r;
 
@@ -719,6 +726,11 @@ bundle_decode_raw(const bundle_raw *r, const int data_size)
 
 	/* re-construct bundle */
 	b = bundle_create();
+	if (b == NULL) {
+		free(extract_cksum);
+		g_free(compute_cksum);
+		return NULL;
+	}
 
 	p_r = (bundle_raw *)d_r;
 
