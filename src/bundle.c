@@ -843,42 +843,41 @@ int bundle_free_exported_argv(int argc, char ***argv)
 	return BUNDLE_ERROR_NONE;
 }
 
-	bundle *
-bundle_import_from_argv(int argc, char **argv)
+bundle *bundle_import_from_argv(int argc, char **argv)
 {
+	int idx;
+	int type;
+	keyval_t *kv;
+	keyval_array_t *kva;
+	unsigned char *byte;
+	char *encoded_byte;
+	unsigned int byte_size;
+	bundle *b;
+
 	if (!argv) {
 		set_last_result(BUNDLE_ERROR_INVALID_PARAMETER);
 		return NULL;  /* TC_FIX error handling for argv =NULL*/
 	}
 
-	bundle *b = bundle_create();
-	if (!b)
+	b = bundle_create();
+	if (!b) {
+		set_last_result(BUNDLE_ERROR_OUT_OF_MEMORY);
 		return NULL;
+	}
 
-
-	/*
-	   int i;
-	   for(i=0; i<argc; i++) {
-	   BUNDLE_LOG_PRINT("[bundle-dbg] argv[%d]='%s'\n", i, argv[i]);
-	   }
-	 */
+	if (argc < 2) {
+		set_last_result(BUNDLE_ERROR_NONE);
+		return b;
+	}
 
 	if (!argv[1] || strcmp(argv[1], TAG_IMPORT_EXPORT_CHECK)) {
-		/*BUNDLE_LOG_PRINT("\nit is not encoded");*/
-		int idx;
 		/*start idx from one as argv[1] is user given argument*/
 		for (idx = 1; idx + 1 < argc; idx = idx + 2)
 			bundle_add(b, argv[idx], argv[idx + 1]);
 
 		return b;
 	}
-	/*BUNDLE_LOG_PRINT("\nit is encoded");*/
-	int idx, type;
-	keyval_t *kv = NULL;
-	keyval_array_t *kva = NULL;
-	unsigned char *byte = NULL;
-	char *encoded_byte;
-	unsigned int byte_size;
+
 	/* start idx from 2 as argv[1] is encoded */
 	for (idx = 2; idx + 1 < argc; idx = idx + 2) {
 		kv = NULL;
@@ -912,6 +911,7 @@ bundle_import_from_argv(int argc, char **argv)
 		free(byte);
 		byte = NULL;
 	}
+
 	set_last_result(BUNDLE_ERROR_NONE);
 	return b;
 }
