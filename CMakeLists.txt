@@ -11,7 +11,7 @@ ENDIF()
 
 ### Required packages
 INCLUDE(FindPkgConfig)
-pkg_check_modules(pkgs REQUIRED glib-2.0 dlog capi-base-common)
+pkg_check_modules(pkgs REQUIRED glib-2.0 dlog capi-base-common json-glib-1.0)
 FOREACH(flag ${pkgs_CFLAGS})
 	SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag}")
 ENDFOREACH(flag)
@@ -22,8 +22,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS}")
 include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/src)
 
 ### Build
-add_library(bundle SHARED 
+add_library(bundle SHARED
 		src/bundle.c
+		src/bundle_json.c
 		src/keyval_type.c
 		src/keyval.c
 		src/keyval_array.c

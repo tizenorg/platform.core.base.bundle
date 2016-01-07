@@ -438,6 +438,59 @@ API int bundle_set_byte_array_element(bundle *b, const char *key, const unsigned
  */
 API int bundle_get_byte_array(bundle *b, const char *key, void ***byte_array, unsigned int *len, unsigned int **array_element_size);
 
+/**
+ * @brief Creates a json data from bundle.
+ * @since_tizen 3.0
+ * @remarks             This API only supports the string type and the string array type.
+ * @param[in]   b       The bundle object
+ * @param[out]  json    The new created json data
+ * @return              The operation result
+ * @retval      BUNDLE_ERROR_NONE       Success
+ * @retval      BUNDLE_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval      BUNDLE_ERROR_OUT_OF_MEMORY      Out of memory
+ * @pre                 @a b must be a valid bundle object.
+ @code
+ #include <bundle_internal.h>
+ bundle *b = bundle_create();
+ char *json;
+ int ret;
+
+ bundle_add_str(b, "foo", "bar");
+ ret = bundle_to_json(b, &json);
+ if (ret != BUNDLE_ERROR_NONE) {
+ bundle_free(b);
+ return;
+ }
+ // json = "{"foo":"bar"}"
+ bundle_free(b);
+ free(json);
+ @endcode
+ */
+API int bundle_to_json(bundle *b, char **json);
+
+/**
+ * @breif Creates a bundle object from json.
+ * @since_tizen 3.0
+ * @remarks             This API only supports the string type and the string array type.
+ * @param[in]   json    The json data
+ * @param[out]  b       The bundle object
+ * @return              The operation result
+ * @retval      BUNDLE_ERROR_NONE       Success
+ * @retval      BUNDLE_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval      BUNDLE_ERROR_OUT_OF_MEMORY      Out of memory
+ @code
+ #include <bundle_internal.h>
+ bundle *b;
+ char *json = "{"foo":"bar"}";
+ int ret;
+
+ ret =  bundle_from_json(json, &b);
+ if (ret != BUNDLE_ERROR_NONE)
+ return;
+ bundle_free(b);
+ @endcode
+ */
+API int bundle_from_json(const char *json, bundle **b);
 
 #ifdef __cplusplus
 }

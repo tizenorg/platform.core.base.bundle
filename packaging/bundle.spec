@@ -10,6 +10,7 @@ BuildRequires:  cmake
 BuildRequires:  pkgconfig(glib-2.0)
 BuildRequires:  pkgconfig(dlog)
 BuildRequires:  pkgconfig(capi-base-common)
+BuildRequires:  pkgconfig(json-glib-1.0)
 %description
 Simple string key-val dictionary ADT
 
