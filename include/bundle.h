@@ -1,10 +1,5 @@
 /*
- * bundle
- *
- * Copyright (c) 2000 - 2011 Samsung Electronics Co., Ltd. All rights reserved.
- *
- * Contact: Jayoun Lee <airjany@samsung.com>, Sewook Park <sewook7.park@samsung.com>,
- * Jaeho Lee <jaeho81.lee@samsung.com>
+ * Copyright (c) 2000 - 2016 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
-
 
 #ifndef __BUNDLE_H__
 #define __BUNDLE_H__
@@ -42,7 +35,7 @@
 extern "C" {
 # endif
 
-#define API 	__attribute__((visibility("default")))
+#define API __attribute__((visibility("default")))
 #define likely(x) __builtin_expect(x,1)
 #define unlikely(x) __builtin_expect(x,0)
 
@@ -53,11 +46,11 @@ extern "C" {
  */
 typedef enum
 {
-	BUNDLE_ERROR_NONE = TIZEN_ERROR_NONE,					/**< Successful */
-	BUNDLE_ERROR_OUT_OF_MEMORY = TIZEN_ERROR_OUT_OF_MEMORY,			/**< Out of memory */
-	BUNDLE_ERROR_INVALID_PARAMETER = TIZEN_ERROR_INVALID_PARAMETER,		/**< Invalid parameter */
-	BUNDLE_ERROR_KEY_NOT_AVAILABLE = TIZEN_ERROR_KEY_NOT_AVAILABLE,	/**< Required key not available */
-	BUNDLE_ERROR_KEY_EXISTS = TIZEN_ERROR_BUNDLE | 0x01	/**< Key exists */
+	BUNDLE_ERROR_NONE = TIZEN_ERROR_NONE, /**< Successful */
+	BUNDLE_ERROR_OUT_OF_MEMORY = TIZEN_ERROR_OUT_OF_MEMORY, /**< Out of memory */
+	BUNDLE_ERROR_INVALID_PARAMETER = TIZEN_ERROR_INVALID_PARAMETER, /**< Invalid parameter */
+	BUNDLE_ERROR_KEY_NOT_AVAILABLE = TIZEN_ERROR_KEY_NOT_AVAILABLE, /**< Required key not available */
+	BUNDLE_ERROR_KEY_EXISTS = TIZEN_ERROR_BUNDLE | 0x01 /**< Key exists */
 } bundle_error_e;
 
 /**
@@ -74,15 +67,14 @@ typedef struct _bundle_t bundle;
  */
 typedef unsigned char bundle_raw;
 
-
 /**
  * @brief Enumeration for key-value pair types.
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
 enum bundle_type_property {
-	BUNDLE_TYPE_ARRAY = 0x0100,	/**< Array type */
-	BUNDLE_TYPE_PRIMITIVE = 0x0200,	/**< Primitive type */
-	BUNDLE_TYPE_MEASURABLE = 0x0400	/**< Measurable type */
+	BUNDLE_TYPE_ARRAY = 0x0100, /**< Array type */
+	BUNDLE_TYPE_PRIMITIVE = 0x0200, /**< Primitive type */
+	BUNDLE_TYPE_MEASURABLE = 0x0400 /**< Measurable type */
 };
 
 /**
@@ -90,12 +82,12 @@ enum bundle_type_property {
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
 enum bundle_type {
-	BUNDLE_TYPE_NONE = -1,	/**< None */
-	BUNDLE_TYPE_ANY = 0,	/**< Any type */
-	BUNDLE_TYPE_STR = 1 | BUNDLE_TYPE_MEASURABLE,	/**< String type (Default) */
-	BUNDLE_TYPE_STR_ARRAY = BUNDLE_TYPE_STR | BUNDLE_TYPE_ARRAY | BUNDLE_TYPE_MEASURABLE,	/**< String array type */
-	BUNDLE_TYPE_BYTE = 2,	/**< Byte type */
-	BUNDLE_TYPE_BYTE_ARRAY = BUNDLE_TYPE_BYTE | BUNDLE_TYPE_ARRAY	/**< Byte array type */
+	BUNDLE_TYPE_NONE = -1, /**< None */
+	BUNDLE_TYPE_ANY = 0, /**< Any type */
+	BUNDLE_TYPE_STR = 1 | BUNDLE_TYPE_MEASURABLE, /**< String type (Default) */
+	BUNDLE_TYPE_STR_ARRAY = BUNDLE_TYPE_STR | BUNDLE_TYPE_ARRAY | BUNDLE_TYPE_MEASURABLE, /**< String array type */
+	BUNDLE_TYPE_BYTE = 2, /**< Byte type */
+	BUNDLE_TYPE_BYTE_ARRAY = BUNDLE_TYPE_BYTE | BUNDLE_TYPE_ARRAY /**< Byte array type */
 };
 
 /**
@@ -104,7 +96,6 @@ enum bundle_type {
  * @see bundle_iterator_t
  */
 typedef struct keyval_t bundle_keyval_t;
-
 
 /**
  * @brief Called for every key-value pair.
@@ -134,7 +125,7 @@ typedef void (*bundle_iterator_t) (
  bundle_free(b); // free bundle
  @endcode
  */
-API bundle*		bundle_create(void);
+API bundle *bundle_create(void);
 
 /**
  * @brief Frees the given bundle object with key-value pairs in it.
@@ -151,7 +142,7 @@ API bundle*		bundle_create(void);
  bundle_free(b); // free bundle
  @endcode
  */
-API int			bundle_free(bundle *b);
+API int bundle_free(bundle *b);
 
 /**
  * @brief Adds a strings array type key-value pair into a given bundle.
@@ -197,7 +188,7 @@ API int bundle_add_str_array(bundle *b, const char *key, const char **str_array,
  bundle_free(b);
  @endcode
  */
-API int				bundle_del(bundle *b, const char* key);
+API int bundle_del(bundle *b, const char *key);
 
 /**
  * @brief Gets a string array from a given key.
@@ -229,7 +220,7 @@ API int				bundle_del(bundle *b, const char* key);
  bundle_free(b);
  @endcode
  */
-API const char** bundle_get_str_array(bundle *b, const char *key,int *len);
+API const char **bundle_get_str_array(bundle *b, const char *key, int *len);
 
 /**
  * @brief Gets the number of bundle items.
@@ -248,7 +239,7 @@ API const char** bundle_get_str_array(bundle *b, const char *key,int *len);
  bundle_free(b);
  @endcode
  */
-API int				bundle_get_count(bundle *b);
+API int bundle_get_count(bundle *b);
 
 /**
  * @brief Gets the type of a value with a given key.
@@ -287,7 +278,7 @@ API int bundle_get_type(bundle *b, const char *key);
  bundle_free(b_dup);
  @endcode
  */
-API bundle *            bundle_dup(bundle *b_from);
+API bundle *bundle_dup(bundle *b_from);
 
 /**
  * @brief Iterates a callback function for each key-value pair in a given bundle.
@@ -337,7 +328,7 @@ API bundle *            bundle_dup(bundle *b_from);
  }
  @endcode
  */
-API void			bundle_foreach(bundle *b, bundle_iterator_t iter, void *user_data);
+API void bundle_foreach(bundle *b, bundle_iterator_t iter, void *user_data);
 
 /**
  * @brief Gets the type of a key-value pair.
@@ -422,7 +413,7 @@ API int bundle_keyval_get_array_val(bundle_keyval_t *kv, void ***array_val, unsi
  bundle_free(b);
  @endcode
  */
-API int				bundle_encode(bundle *b, bundle_raw **r, int *len);
+API int bundle_encode(bundle *b, bundle_raw **r, int *len);
 
 /**
  * @brief Deserializes bundle_raw and gets the bundle object.
@@ -452,7 +443,7 @@ API int				bundle_encode(bundle *b, bundle_raw **r, int *len);
  bundle_free(b_dup);
  @endcode
  */
-API bundle *		bundle_decode(const bundle_raw *r, const int len);
+API bundle *bundle_decode(const bundle_raw *r, const int len);
 
 /**
  * @brief Adds a string type key-value pair into a bundle.

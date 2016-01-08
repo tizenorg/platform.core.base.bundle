@@ -1,10 +1,5 @@
 /*
- * bundle
- *
- * Copyright (c) 2000 - 2011 Samsung Electronics Co., Ltd. All rights reserved.
- *
- * Contact: Jayoun Lee <airjany@samsung.com>, Sewook Park <sewook7.park@samsung.com>,
- * Jaeho Lee <jaeho81.lee@samsung.com>
+ * Copyright (c) 2000 - 2016 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +12,15 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
-
-
 
 /**
  * bundle.c
  */
+
+#include <stdlib.h>
+#include <string.h>
+#include <glib.h>
 
 #include "bundle.h"
 #include "bundle_internal.h"
@@ -32,38 +28,35 @@
 #include "keyval_array.h"
 #include "keyval_type.h"
 #include "bundle_log.h"
-#include <glib.h>
-
-#include <stdlib.h>		/* calloc, free */
-#include <string.h>		/* strdup */
 
 #define CHECKSUM_LENGTH 32
 #define TAG_IMPORT_EXPORT_CHECK "`zaybxcwdveuftgsh`"
+
 /* ADT */
 struct _bundle_t {
 	keyval_t *kv_head;
 };
 
-
 /**
  * Find a kv from bundle
  */
-static keyval_t *
-_bundle_find_kv(bundle *b, const char *key)
+static keyval_t *_bundle_find_kv(bundle *b, const char *key)
 {
 	keyval_t *kv;
-	if (NULL == b) {
+
+	if (b == NULL) {
 		set_last_result(BUNDLE_ERROR_INVALID_PARAMETER);
 		return NULL;
 	}
-	if (NULL == key) {
+
+	if (key == NULL) {
 		set_last_result(BUNDLE_ERROR_INVALID_PARAMETER);
 		return NULL;
 	}
 
 	kv = b->kv_head;
 	while (kv != NULL) {
-		if (0 == strcmp(key, kv->key)) {
+		if (strcmp(key, kv->key) == 0) {
 			set_last_result(BUNDLE_ERROR_NONE);
 			return kv;
 		}
@@ -77,71 +70,75 @@ _bundle_find_kv(bundle *b, const char *key)
 /**
  * Append kv into bundle
  */
-static int
-_bundle_append_kv(bundle *b, keyval_t *new_kv)
+static int _bundle_append_kv(bundle *b, keyval_t *new_kv)
 {
 	keyval_t *kv;
 
-	if (NULL == b->kv_head)
+	if (b->kv_head == NULL) {
 		b->kv_head = new_kv;
-	else {
+	} else {
 		kv = b->kv_head;
-		while (NULL != kv->next)
+		while (kv->next)
 			kv = kv->next;
 		kv->next = new_kv;
 	}
+
 	return BUNDLE_ERROR_NONE;
 }
 
-static int
-_bundle_add_kv(bundle *b, const char *key, const void *val,
+static int _bundle_add_kv(bundle *b, const char *key, const void *val,
 		const size_t size, const int type, const unsigned int len)
 {
+	keyval_t *kv;
+	keyval_t *new_kv;
+	keyval_array_t *kva;
+
 	/* basic value check */
-	if (NULL == b)
+	if (b == NULL)
 		return BUNDLE_ERROR_INVALID_PARAMETER;
-	if (NULL == key)
+	if (key == NULL)
 		return BUNDLE_ERROR_INVALID_PARAMETER;
-	if (0 == strlen(key))
+	if (strlen(key) == 0)
 		return BUNDLE_ERROR_INVALID_PARAMETER;
 
-	keyval_t *kv = _bundle_find_kv(b, key);
-	if (kv) {	/* Key already exists */
+	kv = _bundle_find_kv(b, key);
+	if (kv) /* Key already exists */
 		return BUNDLE_ERROR_KEY_EXISTS;
-	}
 
-	keyval_t *new_kv = NULL;
 	if (keyval_type_is_array(type)) {
 		/* array type */
-		keyval_array_t *kva = keyval_array_new(NULL, key, type,
+		kva = keyval_array_new(NULL, key, type,
 				(const void **) val, len);
 		new_kv = (keyval_t *)kva;
 	} else {
 		/* normal type */
 		new_kv = keyval_new(NULL, key, type, val, size);
 	}
+
 	if (!new_kv)
 		return BUNDLE_ERROR_OUT_OF_MEMORY;
 
 	_bundle_append_kv(b, new_kv);
 
 	return BUNDLE_ERROR_NONE;
-
 }
 
-static int
-_bundle_get_val(bundle *b, const char *key, const int type, void **val,
-		size_t *size, unsigned int *len, size_t **array_element_size)
+static int _bundle_get_val(bundle *b, const char *key, const int type,
+		void **val, size_t *size, unsigned int *len,
+		size_t **array_element_size)
 {
-	keyval_t *kv = _bundle_find_kv(b, key);
-	if (!kv)    /* Key doesn't exist */
+	keyval_t *kv;
+	keyval_array_t *kva;
+
+	kv = _bundle_find_kv(b, key);
+	if (!kv) /* Key doesn't exist */
 		return get_last_result();
 
 	if (BUNDLE_TYPE_ANY != type && type != kv->type)
 		return BUNDLE_ERROR_INVALID_PARAMETER;
 
 	if (keyval_type_is_array(type)) {
-		keyval_array_t *kva = (keyval_array_t *)kv;
+		kva = (keyval_array_t *)kv;
 		keyval_array_get_data(kva, NULL, (void ***)val,
 				len, array_element_size);
 	} else {
@@ -151,11 +148,11 @@ _bundle_get_val(bundle *b, const char *key, const int type, void **val,
 	return BUNDLE_ERROR_NONE;
 }
 
-/** global initialization
- *  Run only once.
+/**
+ * global initialization
+ * Run only once.
  */
-static void
-_bundle_global_init(void)
+static void _bundle_global_init(void)
 {
 	static int _is_done;
 
@@ -169,42 +166,41 @@ _bundle_global_init(void)
 	return;
 }
 
-
 /* APIs */
-bundle *
-bundle_create(void)
+bundle *bundle_create(void)
 {
 	bundle *b = NULL;
 
 	_bundle_global_init();
 
 	b = calloc(1, sizeof(bundle));	/* fill mem with NULL */
-	if (NULL == b) {
-		BUNDLE_EXCEPTION_PRINT("Unable to allocate memory for bundle\n");
+	if (b == NULL) {
+		BUNDLE_EXCEPTION_PRINT(
+				"Unable to allocate memory for bundle\n");
 		set_last_result(BUNDLE_ERROR_OUT_OF_MEMORY);
-		goto EXCEPTION;
+		goto exception;
 	}
 
 	set_last_result(BUNDLE_ERROR_NONE);
 	return b;
 
-EXCEPTION:
+exception:
 	return NULL;
 }
 
-int
-bundle_free(bundle *b)
+int bundle_free(bundle *b)
 {
-	keyval_t *kv, *tmp_kv;
+	keyval_t *kv;
+	keyval_t *tmp_kv;
 
-	if (NULL == b) {
+	if (b == NULL) {
 		BUNDLE_EXCEPTION_PRINT("Bundle is already freed\n");
 		return BUNDLE_ERROR_INVALID_PARAMETER;
 	}
 
 	/* Free keyval list */
 	kv = b->kv_head;
-	while (kv != NULL) {
+	while (kv) {
 		tmp_kv = kv;
 		kv = kv->next;
 		tmp_kv->method->free(tmp_kv, 1);
@@ -216,133 +212,129 @@ bundle_free(bundle *b)
 	return BUNDLE_ERROR_NONE;
 }
 
-int
-bundle_add_str(bundle *b, const char *key, const char *str)
+int bundle_add_str(bundle *b, const char *key, const char *str)
 {
 	if (!str)
 		return BUNDLE_ERROR_INVALID_PARAMETER;
-	return _bundle_add_kv(b, key, str, strlen(str)+1, BUNDLE_TYPE_STR, 1);
+	return _bundle_add_kv(b, key, str, strlen(str) + 1, BUNDLE_TYPE_STR, 1);
 }
 
-int
-bundle_get_str(bundle *b, const char *key, char **str)
+int bundle_get_str(bundle *b, const char *key, char **str)
 {
-	return _bundle_get_val(b, key, BUNDLE_TYPE_STR, (void **) str,
+	return _bundle_get_val(b, key, BUNDLE_TYPE_STR, (void **)str,
 			NULL, NULL, NULL);
 }
 
-int
-bundle_add(bundle *b, const char *key, const char *val)
+int bundle_add(bundle *b, const char *key, const char *val)
 {
 	return bundle_add_str(b, key, val);
 }
 
-int
-bundle_del(bundle *b, const char *key)
+int bundle_del(bundle *b, const char *key)
 {
-	keyval_t *kv = NULL, *prev_kv = NULL;
+	keyval_t *kv;
+	keyval_t *prev_kv = NULL;
 
 	/* basic value check */
-	if (NULL == b)
+	if (b == NULL)
 		return BUNDLE_ERROR_INVALID_PARAMETER;
-	if (NULL == key)
+	if (key == NULL)
 		return BUNDLE_ERROR_INVALID_PARAMETER;
-	if (0 == strlen(key))
+	if (strlen(key) == 0)
 		return BUNDLE_ERROR_INVALID_PARAMETER;
 
 	kv = b->kv_head;
-	while (kv != NULL) {
-		if (0 == strcmp(key, kv->key))
+	while (kv) {
+		if (strcmp(key, kv->key) == 0)
 			break;
 		prev_kv = kv;
 		kv = kv->next;
 	}
-	if (NULL == kv)
+
+	if (kv == NULL) {
 		return BUNDLE_ERROR_KEY_NOT_AVAILABLE;
-	else {
-		if (NULL != prev_kv)
+	} else {
+		if (prev_kv)
 			prev_kv->next = kv->next;
 		if (kv == b->kv_head)
 			b->kv_head = kv->next;
 		kv->method->free(kv, 1);
 	}
-	return BUNDLE_ERROR_NONE;
 
+	return BUNDLE_ERROR_NONE;
 }
 
-const char *
-bundle_get_val(bundle *b, const char *key)
+const char *bundle_get_val(bundle *b, const char *key)
 {
 	char *val = NULL;
-	int ret = 0;
+	int ret = BUNDLE_ERROR_NONE;
 
 	ret = bundle_get_str(b, key, &val);
 	set_last_result(ret);
 
 	return val;
-
 }
 
 /**
  * @brief used by bundle_get_count() API, to count number of items in a bundle
  */
-static void
-_bundle_get_count_iter(const char *k, const int type,
+static void _bundle_get_count_iter(const char *k, const int type,
 		const bundle_keyval_t *kv, void *user_data)
 {
 	int *count = (int *)user_data;
 	*count += 1;
 }
 
-int
-bundle_get_count(bundle *b)
+int bundle_get_count(bundle *b)
 {
 	int count = 0;
-	if (NULL == b)
+
+	if (b == NULL)
 		return count;
 	bundle_foreach(b, _bundle_get_count_iter, &count);
 	return count;
 }
 
-void
-bundle_iterate(bundle *b, bundle_iterate_cb_t callback, void *data)
+void bundle_iterate(bundle *b, bundle_iterate_cb_t callback, void *data)
 {
 	keyval_t *kv;
 
-	if (NULL == b || NULL == callback) {
+	if (b == NULL || callback == NULL) {
 		set_last_result(BUNDLE_ERROR_INVALID_PARAMETER);
 		return;
 	}
 
 	kv = b->kv_head;
-	while (NULL != kv) {
+	while (kv) {
 		callback(kv->key, kv->val, data);
 		kv = kv->next;
 	}
+
 	set_last_result(BUNDLE_ERROR_NONE);
 }
 
-void
-bundle_foreach(bundle *b, bundle_iterator_t iter, void *user_data)
+void bundle_foreach(bundle *b, bundle_iterator_t iter, void *user_data)
 {
-	if (NULL == b || NULL == iter) {
+	keyval_t *kv;
+
+	if (b == NULL || iter == NULL) {
 		set_last_result(BUNDLE_ERROR_INVALID_PARAMETER);
-		return;		/*TC_FIX if b=NULL- error handling */
+		return;	/* TC_FIX if b = NULL- error handling */
 	}
 
-	keyval_t *kv = b->kv_head;
-	while (NULL != kv) {
+	kv = b->kv_head;
+	while (kv) {
 		iter(kv->key, kv->type, kv, user_data);
 		kv = kv->next;
 	}
+
 	set_last_result(BUNDLE_ERROR_NONE);
 }
 
 /* keyval functions */
-int
-bundle_keyval_get_type(bundle_keyval_t *kv)
+int bundle_keyval_get_type(bundle_keyval_t *kv)
 {
-	if (NULL == kv) {
+	if (kv == NULL) {
 		set_last_result(BUNDLE_ERROR_INVALID_PARAMETER);
 		return -1;
 	}
@@ -350,10 +342,9 @@ bundle_keyval_get_type(bundle_keyval_t *kv)
 	return kv->type;
 }
 
-int
-bundle_keyval_type_is_array(bundle_keyval_t *kv)
+int bundle_keyval_type_is_array(bundle_keyval_t *kv)
 {
-	if (NULL == kv) {
+	if (kv == NULL) {
 		set_last_result(BUNDLE_ERROR_INVALID_PARAMETER);
 		return -1;
 	}
@@ -361,10 +352,9 @@ bundle_keyval_type_is_array(bundle_keyval_t *kv)
 	return keyval_type_is_array(kv->type);
 }
 
-int
-bundle_keyval_type_is_measurable(bundle_keyval_t *kv)
+int bundle_keyval_type_is_measurable(bundle_keyval_t *kv)
 {
-	if (NULL == kv) {
+	if (kv == NULL) {
 		set_last_result(BUNDLE_ERROR_INVALID_PARAMETER);
 		return -1;
 	}
@@ -372,80 +362,71 @@ bundle_keyval_type_is_measurable(bundle_keyval_t *kv)
 	return keyval_type_is_measurable(kv->type);
 }
 
-int
-bundle_keyval_get_basic_val(bundle_keyval_t *kv, void **val, size_t *size)
+int bundle_keyval_get_basic_val(bundle_keyval_t *kv, void **val, size_t *size)
 {
 	return keyval_get_data(kv, NULL, val, size);
 }
 
-int
-bundle_keyval_get_array_val(bundle_keyval_t *kv, void ***array_val,
+int bundle_keyval_get_array_val(bundle_keyval_t *kv, void ***array_val,
 		unsigned int *array_len, size_t **array_item_size)
 {
 	return keyval_array_get_data((keyval_array_t *)kv, NULL,
 			array_val, array_len, array_item_size);
 }
 
-
-/*static void
-_iter_do_bundle_dup(const char *key, const void *val, const int type, const size_t size, const unsigned int len, void *user_data)
+bundle *bundle_dup(bundle *b_from)
 {
-	//int r;
-	bundle *b_to = (bundle *)user_data;
-
-	_bundle_add_kv(b_to, key, val, size, type, len);
-
-}
-*/
-bundle *
-bundle_dup(bundle *b_from)
-{
-	bundle *b_to = NULL;
+	bundle *b_to;
+	keyval_t *kv_from;
+	keyval_t *kv_to;
+	keyval_array_t *kva_from;
 	int i;
 
-	if (NULL == b_from) {
+	if (b_from == NULL) {
 		set_last_result(BUNDLE_ERROR_INVALID_PARAMETER);
 		return NULL;
 	}
+
 	b_to = bundle_create();
-	if (NULL == b_to)
+	if (b_to == NULL)
 		return NULL;
 
-	keyval_t *kv_from = b_from->kv_head;
-	keyval_t *kv_to = NULL;
+	kv_from = b_from->kv_head;
 	while (kv_from != NULL) {
 		if (keyval_type_is_array(kv_from->type)) {
-			keyval_array_t *kva_from = (keyval_array_t *)kv_from;
-			kv_to = (keyval_t *) keyval_array_new(NULL, kv_from->key,
+			kva_from = (keyval_array_t *)kv_from;
+			kv_to = (keyval_t *)keyval_array_new(NULL, kv_from->key,
 					kv_from->type, NULL, kva_from->len);
 			if (!kv_to)
-				goto ERR_CLEANUP;
+				goto err;
+
 			for (i = 0; i < kva_from->len; i++) {
 				if (((keyval_array_t *)kv_from)->array_val[i]) {
-					keyval_array_set_element((keyval_array_t *)kv_to, i,
+					keyval_array_set_element(
+							(keyval_array_t *)kv_to, i,
 							((keyval_array_t *)kv_from)->array_val[i],
 							((keyval_array_t *)kv_from)->array_element_size[i]);
 				}
 			}
+
 			_bundle_append_kv(b_to, kv_to);
 		} else {
-			if (_bundle_add_kv(b_to, kv_from->key, kv_from->val,
-						kv_from->size, kv_from->type, 0))
-				goto ERR_CLEANUP;
+			if (_bundle_add_kv(b_to, kv_from->key,
+				kv_from->val, kv_from->size, kv_from->type, 0))
+				goto err;
 		}
 
 		kv_from = kv_from->next;
 	}
+
 	return b_to;
 
-ERR_CLEANUP:
+err:
 	bundle_free(b_to);
 	return NULL;
 }
 
-
-int
-bundle_encode(bundle *b, bundle_raw **r, int *len)
+int bundle_encode(bundle *b, bundle_raw **r, int *len)
 {
 	keyval_t *kv;
 	unsigned char *m;
@@ -453,23 +434,23 @@ bundle_encode(bundle *b, bundle_raw **r, int *len)
 	unsigned char *byte;
 	size_t byte_len;
 	gchar *chksum_val;
+	size_t msize = 0;
 
-	if (NULL == b || NULL == r || NULL == len)
+	if (b == NULL || r == NULL || len == NULL)
 		return BUNDLE_ERROR_INVALID_PARAMETER;
 
 	/* calculate memory size */
-	size_t msize = 0;	/* Sum of required size */
-
 	kv = b->kv_head;
 	while (kv != NULL) {
 		msize += kv->method->get_encoded_size(kv);
 		kv = kv->next;
 	}
+
 	m = calloc(msize + CHECKSUM_LENGTH, sizeof(unsigned char));
-	if (unlikely(NULL == m))
+	if (unlikely(m == NULL))
 		return BUNDLE_ERROR_OUT_OF_MEMORY;
 
-	p_m = m + CHECKSUM_LENGTH;	/* temporary pointer */
+	p_m = m + CHECKSUM_LENGTH; /* temporary pointer */
 
 	kv = b->kv_head;
 	while (kv != NULL) {
@@ -485,37 +466,34 @@ bundle_encode(bundle *b, bundle_raw **r, int *len)
 		free(byte);
 	}
 
-	/*compute checksum from the data*/
+	/* compute checksum from the data */
 	chksum_val = g_compute_checksum_for_string(G_CHECKSUM_MD5,
-			(const char *)(m+CHECKSUM_LENGTH), msize);
-	/*prefix checksum to the data */
+			(const char *)(m + CHECKSUM_LENGTH), msize);
+	/* prefix checksum to the data */
 	memcpy(m, chksum_val, CHECKSUM_LENGTH);
-	if (NULL != r) {
-		/*base64 encode for whole string checksum and data*/
+	if (r) {
+		/* base64 encode for whole string checksum and data */
 		*r = (unsigned char *)g_base64_encode(m, msize + CHECKSUM_LENGTH);
-		if (NULL != len)
+		if (len)
 			*len = strlen((char *)*r);
 	}
 	free(m);
-	g_free(chksum_val);/*free checksum string */
+	g_free(chksum_val); /* free checksum string */
 
 	return BUNDLE_ERROR_NONE;
 }
 
-int
-bundle_free_encoded_rawdata(bundle_raw **r)
+int bundle_free_encoded_rawdata(bundle_raw **r)
 {
 	if (!*r)
-		return BUNDLE_ERROR_INVALID_PARAMETER;
-		/*TC_FIX - double free sigabrt handling */
+		return BUNDLE_ERROR_INVALID_PARAMETER; /* TC_FIX - double free sigabrt handling */
 
 	free(*r);
 	*r = NULL;
 	return BUNDLE_ERROR_NONE;
 }
 
-bundle *
-bundle_decode(const bundle_raw *r, const int data_size)
+bundle *bundle_decode(const bundle_raw *r, const int data_size)
 {
 	bundle *b;
 	bundle_raw *p_r;
@@ -527,24 +505,28 @@ bundle_decode(const bundle_raw *r, const int data_size)
 	unsigned int d_len;
 	char *extract_cksum;
 	gchar *compute_cksum;
+	size_t bytes_read;
+	keyval_t *kv;
+	int type;
 
-	if (NULL == r) {
+	if (r == NULL) {
 		set_last_result(BUNDLE_ERROR_INVALID_PARAMETER);
 		return NULL;
 	}
 
-	extract_cksum = calloc(CHECKSUM_LENGTH+1, sizeof(char));
-	if (unlikely(NULL == extract_cksum)) {
+	extract_cksum = calloc(CHECKSUM_LENGTH + 1, sizeof(char));
+	if (unlikely(extract_cksum == NULL)) {
 		set_last_result(BUNDLE_ERROR_INVALID_PARAMETER);
 		return NULL;
 	}
 
-	/* base 64 decode of input string
+	/*
+	 * base 64 decode of input string
 	 * Since base64 encodes 3 bytes in 4 chars (+3 may be needed in case of non-zero state)
 	 * refer to: https://developer.gnome.org/glib/stable/glib-Base64-Encoding.html#g-base64-decode-step
 	 */
 	d_str = malloc((data_size / 4) * 3 + 3);
-	if (unlikely(NULL == d_str)) {
+	if (unlikely(d_str == NULL)) {
 		set_last_result(BUNDLE_ERROR_OUT_OF_MEMORY);
 		free(extract_cksum);
 		return NULL;
@@ -558,12 +540,14 @@ bundle_decode(const bundle_raw *r, const int data_size)
 		return NULL;
 	}
 
-	/*extract checksum from the received string */
+	/* extract checksum from the received string */
 	strncpy(extract_cksum, (const char *)d_str, CHECKSUM_LENGTH);
 	/* compute checksum for the data */
 	compute_cksum = g_compute_checksum_for_string(G_CHECKSUM_MD5,
-			(const char *)(d_str+CHECKSUM_LENGTH), d_len_raw-CHECKSUM_LENGTH);
-	/* compare checksum values- extracted from the received
+			(const char *)(d_str + CHECKSUM_LENGTH),
+			d_len_raw - CHECKSUM_LENGTH);
+	/*
+	 * compare checksum values- extracted from the received
 	 * string and computed from the data
 	 */
 	if (strcmp(extract_cksum, compute_cksum) != 0) {
@@ -585,18 +569,14 @@ bundle_decode(const bundle_raw *r, const int data_size)
 	}
 
 	p_r = (bundle_raw *)d_r;
-
-	size_t bytes_read;
-	keyval_t *kv;
-
 	while (p_r < d_r + d_len - 1) {
 		kv = NULL;	/* To get a new kv */
 
 		/* Find type, and use decode function according to type */
-		int type = keyval_get_type_from_encoded_byte(p_r);
-
+		type = keyval_get_type_from_encoded_byte(p_r);
 		if (keyval_type_is_array(type))
-			bytes_read = keyval_array_decode(p_r, (keyval_array_t **) &kv);
+			bytes_read = keyval_array_decode(p_r,
+					(keyval_array_t **) &kv);
 		else
 			bytes_read = keyval_decode(p_r, &kv);
 
@@ -621,8 +601,7 @@ struct _argv_idx {
 	int idx;
 };
 
-int
-bundle_encode_raw(bundle *b, bundle_raw **r, int *len)
+int bundle_encode_raw(bundle *b, bundle_raw **r, int *len)
 {
 	keyval_t *kv = NULL;
 	unsigned char *m = NULL;
@@ -630,20 +609,20 @@ bundle_encode_raw(bundle *b, bundle_raw **r, int *len)
 	unsigned char *byte = NULL;
 	size_t byte_len;
 	gchar *chksum_val = NULL;
+	size_t msize = 0;
 
-	if (NULL == b || NULL == r)
+	if (b == NULL || r == NULL)
 		return BUNDLE_ERROR_INVALID_PARAMETER;
 
 	/* calculate memory size */
-	size_t msize = 0;	/* Sum of required size */
-
 	kv = b->kv_head;
 	while (kv != NULL) {
 		msize += kv->method->get_encoded_size(kv);
 		kv = kv->next;
 	}
+
 	m = calloc(msize+CHECKSUM_LENGTH, sizeof(unsigned char));
-	if (unlikely(NULL == m))
+	if (unlikely(m == NULL))
 		return BUNDLE_ERROR_OUT_OF_MEMORY;
 
 	p_m = m + CHECKSUM_LENGTH;	/* temporary pointer */
@@ -662,25 +641,20 @@ bundle_encode_raw(bundle *b, bundle_raw **r, int *len)
 		free(byte);
 	}
 
-	/*compute checksum from the data*/
+	/* compute checksum from the data */
 	chksum_val = g_compute_checksum_for_string(G_CHECKSUM_MD5,
-			(const char *)(m+CHECKSUM_LENGTH), msize);
-	/*prefix checksum to the data */
+			(const char *)(m + CHECKSUM_LENGTH), msize);
+	/* prefix checksum to the data */
 	memcpy(m, chksum_val, CHECKSUM_LENGTH);
-	/*if ( NULL != r ) {
-		*r =(unsigned char*)g_base64_encode(m,msize+CHECKSUM_LENGTH);
-		if ( NULL != len ) *len = strlen((char*)*r);
-	}
-	free(m);*/
+
 	*r = m;
 	*len = msize + CHECKSUM_LENGTH;
-	g_free(chksum_val);/*free checksum string */
+	g_free(chksum_val); /* free checksum string */
 
 	return BUNDLE_ERROR_NONE;
 }
 
-bundle *
-bundle_decode_raw(const bundle_raw *r, const int data_size)
+bundle *bundle_decode_raw(const bundle_raw *r, const int data_size)
 {
 	bundle *b = NULL;
 	bundle_raw *p_r = NULL;
@@ -688,16 +662,19 @@ bundle_decode_raw(const bundle_raw *r, const int data_size)
 	unsigned int d_len_raw;
 	unsigned char *d_r = NULL;
 	unsigned int d_len;
-	char *extract_cksum = NULL;
+	char *extract_cksum;
 	gchar *compute_cksum = NULL;
+	size_t bytes_read;
+	keyval_t *kv;
+	int type;
 
-	if (NULL == r) {
+	if (r == NULL) {
 		set_last_result(BUNDLE_ERROR_INVALID_PARAMETER);
 		return NULL;
 	}
 
 	extract_cksum = calloc(CHECKSUM_LENGTH + 1, sizeof(char));
-	if (unlikely(NULL == extract_cksum)) {
+	if (unlikely(extract_cksum == NULL)) {
 		set_last_result(BUNDLE_ERROR_OUT_OF_MEMORY);
 		return NULL;
 	}
@@ -710,9 +687,10 @@ bundle_decode_raw(const bundle_raw *r, const int data_size)
 	strncpy(extract_cksum, (const char *)d_str, CHECKSUM_LENGTH);
 	/* compute checksum for the data */
 	compute_cksum = g_compute_checksum_for_string(G_CHECKSUM_MD5,
-			(const char *)(d_str+CHECKSUM_LENGTH),
-			d_len_raw-CHECKSUM_LENGTH);
-	/*compare checksum values- extracted from the received
+			(const char *)(d_str + CHECKSUM_LENGTH),
+			d_len_raw - CHECKSUM_LENGTH);
+	/*
+	 * compare checksum values- extracted from the received
 	 * string and computed from the data
 	 */
 	if (strcmp(extract_cksum, compute_cksum) != 0) {
@@ -733,18 +711,14 @@ bundle_decode_raw(const bundle_raw *r, const int data_size)
 	}
 
 	p_r = (bundle_raw *)d_r;
-
-	size_t bytes_read;
-	keyval_t *kv;
-
 	while (p_r < d_r + d_len - 1) {
 		kv = NULL;	/* To get a new kv */
 
 		/* Find type, and use decode function according to type */
-		int type = keyval_get_type_from_encoded_byte(p_r);
-
+		type = keyval_get_type_from_encoded_byte(p_r);
 		if (keyval_type_is_array(type))
-			bytes_read = keyval_array_decode(p_r, (keyval_array_t **) &kv);
+			bytes_read = keyval_array_decode(p_r,
+					(keyval_array_t **) &kv);
 		else
 			bytes_read = keyval_decode(p_r, &kv);
 
@@ -757,31 +731,29 @@ bundle_decode_raw(const bundle_raw *r, const int data_size)
 
 	free(extract_cksum);
 	g_free(compute_cksum);
-
 	set_last_result(BUNDLE_ERROR_NONE);
+
 	return b;
 }
 
-
-void
-_iter_export_to_argv(const char *key, const int type, const keyval_t *kv,
+void _iter_export_to_argv(const char *key, const int type, const keyval_t *kv,
 		void *user_data)
 {
 	struct _argv_idx *vi = (struct _argv_idx *)user_data;
-
-	vi->argv[vi->idx] = (char *)key;
-
-	unsigned char *byte = NULL, *encoded_byte = NULL;
+	unsigned char *byte = NULL;
+	unsigned char *encoded_byte = NULL;
 	size_t byte_len = 0;
 
-	if (0 == kv->method->encode((struct keyval_t *)kv, &byte, &byte_len)) {
+	vi->argv[vi->idx] = (char *)key;
+	if (kv->method->encode((struct keyval_t *)kv, &byte, &byte_len) == 0) {
 		/* TODO: encode FAILED! */
-		BUNDLE_EXCEPTION_PRINT("bundle: FAILED to encode keyval: %s\n", key);
+		BUNDLE_EXCEPTION_PRINT("bundle: FAILED to encode keyval: %s\n",
+				key);
 		return;
 	}
 
 	encoded_byte = (unsigned char *)g_base64_encode(byte, byte_len);
-	if (NULL == encoded_byte) {
+	if (encoded_byte == NULL) {
 		BUNDLE_EXCEPTION_PRINT("bundle: failed to encode byte\n");
 		return;
 	}
@@ -792,10 +764,11 @@ _iter_export_to_argv(const char *key, const int type, const keyval_t *kv,
 	free(byte);
 }
 
-int
-bundle_export_to_argv(bundle *b, char ***argv)
+int bundle_export_to_argv(bundle *b, char ***argv)
 {
-	int argc, item_count;
+	struct _argv_idx vi;
+	int argc;
+	int item_count;
 
 	if (b == NULL || argv == NULL) {
 		set_last_result(BUNDLE_ERROR_INVALID_PARAMETER);
@@ -811,12 +784,11 @@ bundle_export_to_argv(bundle *b, char ***argv)
 		return -1;
 	}
 
-	struct _argv_idx vi;
 	vi.argc = argc;
 	vi.argv = *argv;
 	vi.idx = 2;				/* start from index 2*/
 	vi.argv[1] = TAG_IMPORT_EXPORT_CHECK;	/* set argv[1] as encoded*/
-	/*BUNDLE_LOG_PRINT("\nargument 1 is %s",vi.argv[1]);*/
+	/* BUNDLE_LOG_PRINT("\nargument 1 is %s",vi.argv[1]); */
 
 	bundle_foreach(b, _iter_export_to_argv, &vi);
 
@@ -826,20 +798,19 @@ bundle_export_to_argv(bundle *b, char ***argv)
 
 int bundle_free_exported_argv(int argc, char ***argv)
 {
+	int i;
+
 	if (argc < 1)
 		return BUNDLE_ERROR_INVALID_PARAMETER;
 
 	if (!*argv || argc < 2)
 		return BUNDLE_ERROR_INVALID_PARAMETER;
 
-	int i;
-	for (i = 3; i < argc; i += 2) {
-		free((*argv)[i]);
-		/* need to free value from g_base64_encode() */
-	}
-
+	for (i = 3; i < argc; i += 2)
+		free((*argv)[i]); /* need to free value from g_base64_encode() */
 	free(*argv);
 	*argv = NULL;
+
 	return BUNDLE_ERROR_NONE;
 }
 
@@ -871,7 +842,7 @@ bundle *bundle_import_from_argv(int argc, char **argv)
 	}
 
 	if (!argv[1] || strcmp(argv[1], TAG_IMPORT_EXPORT_CHECK)) {
-		/*start idx from one as argv[1] is user given argument*/
+		/* start idx from one as argv[1] is user given argument */
 		for (idx = 1; idx + 1 < argc; idx = idx + 2)
 			bundle_add(b, argv[idx], argv[idx + 1]);
 
@@ -887,7 +858,7 @@ bundle *bundle_import_from_argv(int argc, char **argv)
 
 		/* base64_decode */
 		byte = g_base64_decode(encoded_byte, &byte_size);
-		if (NULL == byte) {
+		if (byte == NULL) {
 			if (b)
 				set_last_result(bundle_free(b));
 			return NULL;
@@ -895,16 +866,12 @@ bundle *bundle_import_from_argv(int argc, char **argv)
 
 		type = keyval_get_type_from_encoded_byte(byte);
 		if (keyval_type_is_array(type)) {
-			if (0 == keyval_array_decode(byte, &kva)) {
-				/* TODO: error! */
+			if (keyval_array_decode(byte, &kva) == 0) /* TODO: error! */
 				BUNDLE_EXCEPTION_PRINT("Unable to Decode array\n");
-			}
 			kv = (keyval_t *)kva;
 		} else {
-			if (0 == keyval_decode(byte, &kv)) {
-				/* TODO: error! */
+			if (keyval_decode(byte, &kv) == 0) /* TODO: error! */
 				BUNDLE_EXCEPTION_PRINT("Unable to Decode\n");
-			}
 		}
 		_bundle_append_kv(b, kv);
 
@@ -916,40 +883,43 @@ bundle *bundle_import_from_argv(int argc, char **argv)
 	return b;
 }
 
-
-	int
-bundle_get_type(bundle *b, const char *key)
+int bundle_get_type(bundle *b, const char *key)
 {
 	keyval_t *kv = _bundle_find_kv(b, key);
-	if (kv)
+
+	if (kv) {
 		return kv->type;
-	else {
+	} else {
 		set_last_result(BUNDLE_ERROR_KEY_NOT_AVAILABLE);
 		return BUNDLE_TYPE_NONE;
 	}
 }
 
-/** Get length of an array
+/*
+ * Get length of an array
  */
-	unsigned int
-bundle_get_array_len(bundle *b, const char *key)
+unsigned int bundle_get_array_len(bundle *b, const char *key)
 {
 	return BUNDLE_ERROR_NONE;
 }
 
-/** Get size of an item in byte, of given pointer
+/*
+ * Get size of an item in byte, of given pointer
  */
-	size_t
-bundle_get_array_val_size(bundle *b, const char *key, const void *val_ptr)
+size_t bundle_get_array_val_size(bundle *b, const char *key,
+		const void *val_ptr)
 {
 	return BUNDLE_ERROR_NONE;
 }
-static int
-bundle_set_array_val(bundle *b, const char *key, const int type,
+
+static int bundle_set_array_val(bundle *b, const char *key, const int type,
 		const unsigned int idx, const void *val, const size_t size)
 {
-	keyval_t *kv = _bundle_find_kv(b, key);
-	if (NULL == kv)
+	keyval_t *kv;
+	keyval_array_t *kva;
+
+	kv = _bundle_find_kv(b, key);
+	if (kv == NULL)
 		return get_last_result();
 
 	if (type != kv->type)
@@ -959,8 +929,7 @@ bundle_set_array_val(bundle *b, const char *key, const int type,
 	if (!keyval_type_is_array(kv->type))
 		return BUNDLE_ERROR_INVALID_PARAMETER;
 
-	keyval_array_t *kva = (keyval_array_t *)kv;
-
+	kva = (keyval_array_t *)kv;
 	if (!keyval_array_is_idx_valid(kva, idx))
 		return BUNDLE_ERROR_INVALID_PARAMETER;
 
@@ -971,17 +940,14 @@ bundle_set_array_val(bundle *b, const char *key, const int type,
 	return keyval_array_set_element(kva, idx, (void *)val, size);
 }
 
-
-	int
-bundle_add_str_array(bundle *b, const char *key, const char **str_array,
+int bundle_add_str_array(bundle *b, const char *key, const char **str_array,
 		const int len)
 {
 	return _bundle_add_kv(b, key, str_array, 0, BUNDLE_TYPE_STR_ARRAY, len);
 }
 
-
-	int
-bundle_get_val_array(bundle *b, const char *key, char ***str_array, int *len)
+int bundle_get_val_array(bundle *b, const char *key, char ***str_array,
+		int *len)
 {
 	return _bundle_get_val(b, key, BUNDLE_TYPE_STR_ARRAY,
 			(void **)str_array, NULL, (unsigned int *)len, NULL);
@@ -998,17 +964,17 @@ const char **bundle_get_str_array(bundle *b, const char *key, int *len)
 	return arr_val;
 }
 
-
-	int
-bundle_compare(bundle *b1, bundle *b2)
+int bundle_compare(bundle *b1, bundle *b2)
 {
+	keyval_t *kv1;
+	keyval_t *kv2;
+
 	if (!b1 || !b2)
 		return -1;
 
-	keyval_t *kv1, *kv2;
-
 	if (bundle_get_count(b1) != bundle_get_count(b2))
 		return 1;
+
 	for (kv1 = b1->kv_head; kv1 != NULL; kv1 = kv1->next) {
 		kv2 = _bundle_find_kv(b2, kv1->key);
 		if (!kv2)
@@ -1016,58 +982,49 @@ bundle_compare(bundle *b1, bundle *b2)
 		if (kv1->method->compare(kv1, kv2))
 			return 1;
 	}
+
 	return 0;
 }
 
-
-
-	int
-bundle_set_str_array_element(bundle *b, const char *key,
+int bundle_set_str_array_element(bundle *b, const char *key,
 		const unsigned int idx, const char *val)
 {
 	if (!val)
 		return BUNDLE_ERROR_INVALID_PARAMETER;
 
 	return bundle_set_array_val(b, key, BUNDLE_TYPE_STR_ARRAY,
-			idx, val, strlen(val)+1);
+			idx, val, strlen(val) + 1);
 }
 
-
-	int
-bundle_add_byte(bundle *b, const char *key, const void *byte,
+int bundle_add_byte(bundle *b, const char *key, const void *byte,
 		const size_t size)
 {
 	return _bundle_add_kv(b, key, byte, size, BUNDLE_TYPE_BYTE, 1);
 }
 
-	int
-bundle_get_byte(bundle *b, const char *key, void **byte, size_t *size)
+int bundle_get_byte(bundle *b, const char *key, void **byte, size_t *size)
 {
-	return _bundle_get_val(b, key, BUNDLE_TYPE_BYTE, (void **) byte,
+	return _bundle_get_val(b, key, BUNDLE_TYPE_BYTE, (void **)byte,
 			size, NULL, NULL);
 }
 
-	int
-bundle_add_byte_array(bundle *b, const char *key, void **byte_array,
+int bundle_add_byte_array(bundle *b, const char *key, void **byte_array,
 		const unsigned int len)
 {
-	return _bundle_add_kv(b, key, byte_array, 0, BUNDLE_TYPE_BYTE_ARRAY, len);
+	return _bundle_add_kv(b, key, byte_array, 0,
+			BUNDLE_TYPE_BYTE_ARRAY, len);
 }
 
-	int
-bundle_get_byte_array(bundle *b, const char *key, void ***byte_array,
+int bundle_get_byte_array(bundle *b, const char *key, void ***byte_array,
 		unsigned int *len, unsigned int **array_element_size)
 {
 	return _bundle_get_val(b, key, BUNDLE_TYPE_BYTE_ARRAY,
 			(void **)byte_array, NULL, len, array_element_size);
 }
 
-
-	int
-bundle_set_byte_array_element(bundle *b, const char *key,
+int bundle_set_byte_array_element(bundle *b, const char *key,
 		const unsigned int idx, const void *val, const size_t size)
 {
 	return bundle_set_array_val(b, key, BUNDLE_TYPE_BYTE_ARRAY,
 			idx, val, size);
 }
-

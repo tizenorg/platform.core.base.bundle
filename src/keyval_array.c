@@ -1,10 +1,5 @@
 /*
- * bundle
- *
- * Copyright (c) 2000 - 2011 Samsung Electronics Co., Ltd. All rights reserved.
- *
- * Contact: Jayoun Lee <airjany@samsung.com>, Sewook Park <sewook7.park@samsung.com>,
- * Jaeho Lee <jaeho81.lee@samsung.com>
+ * Copyright (c) 2000 - 2016 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,24 +12,21 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
-
 
 /**
  * keyval_array.c
  * Implementation of keyval_array object
  */
 
+#include <stdlib.h>
+#include <string.h>
+
 #include "keyval_array.h"
 #include "keyval.h"
 #include "keyval_type.h"
 #include "bundle.h"
 #include "bundle_log.h"
-
-#include <stdlib.h>
-#include <string.h>
-
 
 static keyval_method_collection_t method = {
 	(keyval_method_free_t) keyval_array_free,
@@ -44,30 +36,28 @@ static keyval_method_collection_t method = {
 	(keyval_method_decode_t) keyval_array_decode
 };
 
-keyval_array_t *
-keyval_array_new(keyval_array_t *kva, const char *key, const int type,
-		const void **array_val, const unsigned int len)
+keyval_array_t *keyval_array_new(keyval_array_t *kva, const char *key,
+		const int type,	const void **array_val, const unsigned int len)
 {
-	int must_free_obj;
-	must_free_obj = kva ? 0 : 1;
+	int must_free_obj = kva ? 0 : 1;
+	keyval_t *kv;
 
 	if (!kva) {
 		kva = calloc(1, sizeof(keyval_array_t));
-		if (unlikely(NULL == kva)) {
+		if (unlikely(kva == NULL)) {
 			set_last_result(BUNDLE_ERROR_OUT_OF_MEMORY);
 			return NULL;
 		}
 	}
 
 	/* keyval setting */
-	keyval_t *kv = keyval_new((keyval_t *)kva, key, type, NULL, 0);
-	if (unlikely(NULL == kv)) {
+	kv = keyval_new((keyval_t *)kva, key, type, NULL, 0);
+	if (unlikely(kv == NULL)) {
 			set_last_result(BUNDLE_ERROR_OUT_OF_MEMORY);
 			return NULL;
 	}
 
 	kv->type = kv->type | BUNDLE_TYPE_ARRAY;
-
 	kva->len = len;
 
 	/* Set array value, if exist */
@@ -100,7 +90,7 @@ keyval_array_new(keyval_array_t *kva, const char *key, const int type,
 					(void **)array_val,
 					len,
 					keyval_type_get_measure_size_func(type))
-				) {
+					) {
 			keyval_array_free(kva, 1);
 			return NULL;
 		}
@@ -112,15 +102,15 @@ keyval_array_new(keyval_array_t *kva, const char *key, const int type,
 	return kva;
 }
 
-void
-keyval_array_free(keyval_array_t *kva, int do_free_object)
+void keyval_array_free(keyval_array_t *kva, int do_free_object)
 {
+	int i;
+
 	if (!kva)
 		return;
 
 	/* free keyval_array elements */
 	free(kva->array_element_size);
-	int i;
 	for (i = 0; i < kva->len; i++) {
 		if (kva->array_val[i])
 			free(kva->array_val[i]);
@@ -135,46 +125,47 @@ keyval_array_free(keyval_array_t *kva, int do_free_object)
 		free(kva);
 }
 
-int
-keyval_array_compare(keyval_array_t *kva1, keyval_array_t *kva2)
+int keyval_array_compare(keyval_array_t *kva1, keyval_array_t *kva2)
 {
-	keyval_t *kv1, *kv2;
+	keyval_t *kv1;
+	keyval_t *kv2;
+	int i;
+
 	if (!kva1 || !kva2)
 		return -1;
 
 	kv1 = (keyval_t *)kva1;
 	kv2 = (keyval_t *)kva2;
 
-	if (0 != strcmp(kv1->key, kv2->key))
+	if (strcmp(kv1->key, kv2->key) != 0)
 		return 1;
 	if (kv1->type != kv2->type)
 		return 1;
 	if (kva1->len != kva2->len)
 		return 1;
-	int i;
+
 	for (i = 0; i < kva1->len; i++) {
 		if (kva1->array_val[i] == NULL && kva2->array_val[i] == NULL)
 			continue;
 		if (kva1->array_val[i] == NULL || kva2->array_val[i] == NULL)
 			return 1;
-		if (0 != memcmp(kva1->array_val[i], kva2->array_val[i],
-					kva1->array_element_size[i]))
+		if (memcmp(kva1->array_val[i], kva2->array_val[i],
+					kva1->array_element_size[i]) != 0)
 			return 1;
 	}
 
 	return 0;
 }
 
-int
-keyval_array_copy_array(keyval_array_t *kva, void **array_val,
+int keyval_array_copy_array(keyval_array_t *kva, void **array_val,
 		unsigned int array_len, size_t (*measure_val_len)(void *val))
 {
 	keyval_t *kv = (keyval_t *)kva;
+	keyval_type_measure_size_func_t measure_size;
 	int i;
 
 	/* Get measure_size function of the value type */
-	keyval_type_measure_size_func_t measure_size =
-		keyval_type_get_measure_size_func(kv->type);
+	measure_size = keyval_type_get_measure_size_func(kv->type);
 	if (!measure_size)
 		return -1;
 
@@ -201,16 +192,14 @@ cleanup_exit:
 	return -1;
 }
 
-int
-keyval_array_is_idx_valid(keyval_array_t *kva, int idx)
+int keyval_array_is_idx_valid(keyval_array_t *kva, int idx)
 {
 	if (kva && kva->len > idx && 0 <= idx)
 		return 1;
 	return 0;
 }
 
-int
-keyval_array_set_element(keyval_array_t *kva, int idx, void *val, size_t size)
+int keyval_array_set_element(keyval_array_t *kva, int idx, void *val, size_t size)
 {
 	/* An element is already exist in the idx! */
 	if (kva->array_val[idx]) {
@@ -237,13 +226,15 @@ keyval_array_set_element(keyval_array_t *kva, int idx, void *val, size_t size)
 	return BUNDLE_ERROR_NONE;
 }
 
-int
-keyval_array_get_data(keyval_array_t *kva, int *type,
-		void ***array_val, unsigned int *len, size_t **array_element_size)
+int keyval_array_get_data(keyval_array_t *kva, int *type, void ***array_val,
+		unsigned int *len, size_t **array_element_size)
 {
+	keyval_t *kv;
+
 	if (!kva)
 		return BUNDLE_ERROR_INVALID_PARAMETER;
-	keyval_t *kv = (keyval_t *)kva;
+
+	kv = (keyval_t *)kva;
 	if (!keyval_type_is_array(kv->type))
 		return BUNDLE_ERROR_INVALID_PARAMETER;
 
@@ -260,32 +251,30 @@ keyval_array_get_data(keyval_array_t *kva, int *type,
 	return BUNDLE_ERROR_NONE;
 }
 
-size_t
-keyval_array_get_encoded_size(keyval_array_t *kva)
+size_t keyval_array_get_encoded_size(keyval_array_t *kva)
 {
 	size_t sum_array_element_size = 0;
 	int i;
+	size_t encoded_size;
+
 	for (i = 0; i < kva->len; i++)
 		sum_array_element_size += kva->array_element_size[i];
 
-	size_t encoded_size
-		= sizeof(size_t) /* total size */
+	encoded_size = sizeof(size_t) /* total size */
 		+ sizeof(int)    /* type */
 		+ sizeof(size_t) /* keysize */
 		+ strlen(((keyval_t *)kva)->key) + 1 /* key (+ null byte) */
 		+ sizeof(int)    /* len */
-		+ kva->len * sizeof(size_t)          /* array_element_size */
+		+ kva->len * sizeof(size_t)	/* array_element_size */
 		+ sum_array_element_size;
 
 	return encoded_size;
 }
 
-size_t
-keyval_array_encode(keyval_array_t *kva, void **byte, size_t *byte_len)
+size_t keyval_array_encode(keyval_array_t *kva, void **byte, size_t *byte_len)
 {
 	keyval_t *kv = (keyval_t *)kva;
 	int i;
-
 	/* Calculate memory size for kva */
 	static const size_t sz_type = sizeof(int);
 	static const size_t sz_keysize = sizeof(size_t);
@@ -293,6 +282,8 @@ keyval_array_encode(keyval_array_t *kva, void **byte, size_t *byte_len)
 	static const unsigned int sz_len = sizeof(int);
 	size_t sz_array_element_size = kva->len * sizeof(size_t);
 	size_t sz_array_val = 0;
+	unsigned char *p;
+
 	for (i = 0; i < kva->len; i++)
 		sz_array_val += kva->array_element_size[i];
 
@@ -303,15 +294,21 @@ keyval_array_encode(keyval_array_t *kva, void **byte, size_t *byte_len)
 		return 0;
 
 	/* Copy data */
-	unsigned char *p = *byte;
+	p = *byte;
 
-	memcpy(p, byte_len, sizeof(size_t)); p += sizeof(size_t);
-	memcpy(p, &(kv->type), sz_type); p += sz_type;
-	memcpy(p, &sz_key, sz_keysize); p += sz_keysize;
-	memcpy(p, kv->key, sz_key); p += sz_key;
-	memcpy(p, &(kva->len), sz_len); p += sz_len;
+	memcpy(p, byte_len, sizeof(size_t));
+	p += sizeof(size_t);
+	memcpy(p, &(kv->type), sz_type);
+	p += sz_type;
+	memcpy(p, &sz_key, sz_keysize);
+	p += sz_keysize;
+	memcpy(p, kv->key, sz_key);
+	p += sz_key;
+	memcpy(p, &(kva->len), sz_len);
+	p += sz_len;
 	memcpy(p, kva->array_element_size, sz_array_element_size);
 	p += sz_array_element_size;
+
 	for (i = 0; i < kva->len; i++) {
 		memcpy(p, kva->array_val[i], kva->array_element_size[i]);
 		p += kva->array_element_size[i];
@@ -320,32 +317,43 @@ keyval_array_encode(keyval_array_t *kva, void **byte, size_t *byte_len)
 	return *byte_len;
 }
 
-size_t
-keyval_array_decode(void *byte, keyval_array_t **kva)
+size_t keyval_array_decode(void *byte, keyval_array_t **kva)
 {
 	static const size_t sz_byte_len = sizeof(size_t);
 	static const size_t sz_type = sizeof(int);
 	static const size_t sz_keysize = sizeof(size_t);
 	static const int sz_len = sizeof(unsigned int);
-
 	unsigned char *p = byte;
-
-	/* Get data */
-	size_t byte_len = *((size_t *)p); p += sz_byte_len;
-	int type = *((int *)p); p += sz_type;
-	size_t keysize = *((size_t *)p); p += sz_keysize;
-	char *key = (char *)p; p += keysize;
-	unsigned int len = *((unsigned int *)p); p += sz_len;
-	size_t *array_element_size = (size_t *) p; p += sizeof(size_t) * len;
-	void *array_val = (void *)p;
-
-	*kva = keyval_array_new(NULL, key, type, NULL, len);
+	size_t byte_len;
+	int type;
+	size_t keysize;
+	char *key;
+	unsigned int len;
+	size_t *array_element_size;
+	void *array_val;
 	int i;
 	size_t elem_size = 0;
+
+	/* Get data */
+	byte_len = *((size_t *)p);
+	p += sz_byte_len;
+	type = *((int *)p);
+	p += sz_type;
+	keysize = *((size_t *)p);
+	p += sz_keysize;
+	key = (char *)p;
+	p += keysize;
+	len = *((unsigned int *)p);
+	p += sz_len;
+	array_element_size = (size_t *)p;
+	p += sizeof(size_t) * len;
+	array_val = (void *)p;
+
+	*kva = keyval_array_new(NULL, key, type, NULL, len);
 	for (i = 0; i < len; i++) {
-		elem_size += i ? array_element_size[i-1] : 0;
+		elem_size += i ? array_element_size[i - 1] : 0;
 		if (keyval_array_set_element(*kva, i,
-					(void *)(array_val+elem_size),
+					(void *)(array_val + elem_size),
 					array_element_size[i])) {
 			keyval_array_free(*kva, 1);
 			*kva = NULL;
@@ -355,4 +363,3 @@ keyval_array_decode(void *byte, keyval_array_t **kva)
 
 	return byte_len;
 }
-

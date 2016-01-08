@@ -1,10 +1,5 @@
 /*
- * bundle
- *
- * Copyright (c) 2000 - 2011 Samsung Electronics Co., Ltd. All rights reserved.
- *
- * Contact: Jayoun Lee <airjany@samsung.com>, Sewook Park <sewook7.park@samsung.com>,
- * Jaeho Lee <jaeho81.lee@samsung.com>
+ * Copyright (c) 2000 - 2016 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +12,19 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
-
 
 /**
  * keyval.c
  * Implementation of keyval object
  */
 
+#include <stdlib.h>
+
 #include "keyval_type.h"
 #include "keyval.h"
 #include "bundle_log.h"
 #include "bundle.h"
-#include <stdlib.h>
 
 static keyval_method_collection_t method = {
 	keyval_free,
@@ -40,12 +34,10 @@ static keyval_method_collection_t method = {
 	keyval_decode
 };
 
-keyval_t *
-keyval_new(keyval_t *kv, const char *key, const int type, const void *val,
-		const size_t size)
+keyval_t *keyval_new(keyval_t *kv, const char *key,
+		const int type, const void *val, const size_t size)
 {
-	int must_free_obj;
-	must_free_obj = kv ? 0 : 1;
+	int must_free_obj = kv ? 0 : 1;
 
 	if (!kv) {
 		kv = calloc(1, sizeof(keyval_t));
@@ -59,6 +51,7 @@ keyval_new(keyval_t *kv, const char *key, const int type, const void *val,
 		keyval_free(kv, must_free_obj);
 		return NULL;
 	}
+
 	kv->key = strdup(key);
 	if (!kv->key) {
 		set_last_result(BUNDLE_ERROR_OUT_OF_MEMORY);
@@ -85,10 +78,9 @@ keyval_new(keyval_t *kv, const char *key, const int type, const void *val,
 	return kv;
 }
 
-void
-keyval_free(keyval_t *kv, int do_free_object)
+void keyval_free(keyval_t *kv, int do_free_object)
 {
-	if (NULL == kv)
+	if (kv == NULL)
 		return;
 
 	if (kv->key) {
@@ -96,7 +88,7 @@ keyval_free(keyval_t *kv, int do_free_object)
 		kv->key = NULL;
 	}
 
-	if (NULL != kv->val) {
+	if (kv->val != NULL) {
 		free(kv->val);
 		kv->val = NULL;
 	}
@@ -107,11 +99,11 @@ keyval_free(keyval_t *kv, int do_free_object)
 	return;
 }
 
-int
-keyval_get_data(keyval_t *kv, int *type, void **val, size_t *size)
+int keyval_get_data(keyval_t *kv, int *type, void **val, size_t *size)
 {
 	if (!kv)
 		return BUNDLE_ERROR_INVALID_PARAMETER;
+
 	if (keyval_type_is_array(kv->type))
 		return BUNDLE_ERROR_INVALID_PARAMETER;
 
@@ -125,13 +117,12 @@ keyval_get_data(keyval_t *kv, int *type, void **val, size_t *size)
 	return 0;
 }
 
-int
-keyval_compare(keyval_t *kv1, keyval_t *kv2)
+int keyval_compare(keyval_t *kv1, keyval_t *kv2)
 {
 	if (!kv1 || !kv2)
 		return -1;
 
-	if (0 != strcmp(kv1->key, kv2->key))
+	if (strcmp(kv1->key, kv2->key) != 0)
 		return 1;
 	if (kv1->type != kv2->type)
 		return 1;
@@ -142,20 +133,20 @@ keyval_compare(keyval_t *kv1, keyval_t *kv2)
 		return 0;
 	if (kv1->val == NULL || kv2->val == NULL)
 		return 1;
-	if (0 != memcmp(kv1->val, kv2->val, kv1->size))
+	if (memcmp(kv1->val, kv2->val, kv1->size) != 0)
 		return 1;
 
 	return 0;
 }
 
-size_t
-keyval_get_encoded_size(keyval_t *kv)
+size_t keyval_get_encoded_size(keyval_t *kv)
 {
+	size_t encoded_size;
+
 	if (!kv)
 		return 0;
 
-	size_t encoded_size
-		= sizeof(size_t)        /* total size */
+	encoded_size = sizeof(size_t)   /* total size */
 		+ sizeof(int)           /* type */
 		+ sizeof(size_t)        /* key size */
 		+ strlen(kv->key) + 1   /* key (+ null byte) */
@@ -175,14 +166,14 @@ keyval_get_encoded_size(keyval_t *kv)
  * @param[out]	byte_len
  * @return byte_len
  */
-size_t
-keyval_encode(keyval_t *kv, unsigned char **byte, size_t *byte_len)
+size_t keyval_encode(keyval_t *kv, unsigned char **byte, size_t *byte_len)
 {
 	static const size_t sz_type = sizeof(int);
 	static const size_t sz_keysize = sizeof(size_t);
 	size_t sz_key = strlen(kv->key) + 1;
 	static const size_t sz_size = sizeof(size_t);
 	size_t sz_val = kv->size;
+	unsigned char *p;
 
 	*byte_len = keyval_get_encoded_size(kv);
 
@@ -190,14 +181,20 @@ keyval_encode(keyval_t *kv, unsigned char **byte, size_t *byte_len)
 	if (!*byte)
 		return 0;
 
-	unsigned char *p = *byte;
+	p = *byte;
 
-	memcpy(p, byte_len, sizeof(size_t)); p += sizeof(size_t);
-	memcpy(p, &(kv->type), sz_type); p += sz_type;
-	memcpy(p, &sz_key, sz_keysize); p += sz_keysize;
-	memcpy(p, kv->key, sz_key); p += sz_key;
-	memcpy(p, &(kv->size), sz_size); p += sz_size;
-	memcpy(p, kv->val, sz_val); p += sz_val;
+	memcpy(p, byte_len, sizeof(size_t));
+	p += sizeof(size_t);
+	memcpy(p, &(kv->type), sz_type);
+	p += sz_type;
+	memcpy(p, &sz_key, sz_keysize);
+	p += sz_keysize;
+	memcpy(p, kv->key, sz_key);
+	p += sz_key;
+	memcpy(p, &(kv->size), sz_size);
+	p += sz_size;
+	memcpy(p, kv->val, sz_val);
+	p += sz_val;
 
 	return *byte_len;
 }
@@ -211,22 +208,32 @@ keyval_encode(keyval_t *kv, unsigned char **byte, size_t *byte_len)
  *                  If kv is not NULL, given kv is used. (No new kv is created.)
  * @return        Number of bytes read from byte.
  */
-size_t
-keyval_decode(unsigned char *byte, keyval_t **kv)
+size_t keyval_decode(unsigned char *byte, keyval_t **kv)
 {
 	static const size_t sz_byte_len = sizeof(size_t);
 	static const size_t sz_type = sizeof(int);
 	static const size_t sz_keysize = sizeof(size_t);
 	static const size_t sz_size = sizeof(size_t);
-
+	size_t byte_len;
+	int type;
+	size_t keysize;
+	char *key;
+	size_t size;
+	void *val;
 	unsigned char *p = byte;
 
-	size_t byte_len = *((size_t *)p); p += sz_byte_len;
-	int type = *((int *)p); p += sz_type;
-	size_t keysize = *((size_t *)p); p += sz_keysize;
-	char *key = (char *)p; p += keysize;
-	size_t size = *((size_t *)p); p += sz_size;
-	void *val = (void *)p; p += size;
+	byte_len = *((size_t *)p);
+	p += sz_byte_len;
+	type = *((int *)p);
+	p += sz_type;
+	keysize = *((size_t *)p);
+	p += sz_keysize;
+	key = (char *)p;
+	p += keysize;
+	size = *((size_t *)p);
+	p += sz_size;
+	val = (void *)p;
+	p += size;
 
 	if (kv)
 		*kv = keyval_new(*kv, key, type, val, size);
@@ -234,15 +241,14 @@ keyval_decode(unsigned char *byte, keyval_t **kv)
 	return byte_len;
 }
 
-
-int
-keyval_get_type_from_encoded_byte(unsigned char *byte)
+int keyval_get_type_from_encoded_byte(unsigned char *byte)
 {
 	static const size_t sz_byte_len = sizeof(size_t);
-
 	unsigned char *p = byte;
+	int type;
+
 	 p += sz_byte_len;
-	int type = *((int *)p);
+	type = *((int *)p);
+
 	return type;
 }
-
