@@ -857,7 +857,7 @@ bundle *bundle_import_from_argv(int argc, char **argv)
 		encoded_byte = argv[idx+1];
 
 		/* base64_decode */
-		byte = g_base64_decode(encoded_byte, &byte_size);
+		byte = g_base64_decode(encoded_byte, (gsize *)&byte_size);
 		if (byte == NULL) {
 			if (b)
 				set_last_result(bundle_free(b));
@@ -1019,7 +1019,7 @@ int bundle_get_byte_array(bundle *b, const char *key, void ***byte_array,
 		unsigned int *len, unsigned int **array_element_size)
 {
 	return _bundle_get_val(b, key, BUNDLE_TYPE_BYTE_ARRAY,
-			(void **)byte_array, NULL, len, array_element_size);
+			(void **)byte_array, NULL, len, (size_t **)array_element_size);
 }
 
 int bundle_set_byte_array_element(bundle *b, const char *key,
