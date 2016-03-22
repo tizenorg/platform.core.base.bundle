@@ -260,7 +260,7 @@ API int bundle_get_type(bundle *b, const char *key);
 
 /**
  * @brief Duplicates a given bundle object.
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
  * @param[in]   b_from  the bundle object to be duplicated
  * @return              The new bundle object
