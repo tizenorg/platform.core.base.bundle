@@ -36,16 +36,15 @@ extern "C" {
 # endif
 
 #define API __attribute__((visibility("default")))
-#define likely(x) __builtin_expect(x,1)
-#define unlikely(x) __builtin_expect(x,0)
+#define likely(x) __builtin_expect(x, 1)
+#define unlikely(x) __builtin_expect(x, 0)
 
 /**
  * @brief Enumeration for error code of Bundle.
  *
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
-typedef enum
-{
+typedef enum {
 	BUNDLE_ERROR_NONE = TIZEN_ERROR_NONE, /**< Successful */
 	BUNDLE_ERROR_OUT_OF_MEMORY = TIZEN_ERROR_OUT_OF_MEMORY, /**< Out of memory */
 	BUNDLE_ERROR_INVALID_PARAMETER = TIZEN_ERROR_INVALID_PARAMETER, /**< Invalid parameter */
@@ -193,8 +192,8 @@ API int bundle_del(bundle *b, const char *key);
 /**
  * @brief Gets a string array from a given key.
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
- * @remarks 		You MUST NOT free or modify the returned string!
- * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
+ * @remarks	You MUST NOT free or modify the returned string!
+ *		The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
  * @param[in]	b	The bundle object
  * @param[in]	key	The key
  * @param[out]	len	The array length
