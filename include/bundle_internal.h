@@ -218,7 +218,6 @@ API bundle *bundle_decode_raw(const bundle_raw *r, const int len);
  * @exception BUNDLE_ERROR_OUT_OF_MEMORY	Out of memory
  * @pre		@a b is a valid bundle object.
  * @post	@a argv is a pointer of newly allocated memory. It must be freed.
- *          Each item of @a argv points to the string in the bundle object @a b. If @a b is freed, @a argv will have garbage pointers. DO NOT FREE @a b BEFORE ACCESSING @a argv!!
  * @see		bundle_import_from_argv()
  @code
  #include <bundle_internal.h>

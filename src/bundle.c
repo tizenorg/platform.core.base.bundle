@@ -744,7 +744,7 @@ void _iter_export_to_argv(const char *key, const int type, const keyval_t *kv,
 	unsigned char *encoded_byte = NULL;
 	size_t byte_len = 0;
 
-	vi->argv[vi->idx] = (char *)key;
+	vi->argv[vi->idx] = strdup(key);
 	if (kv->method->encode((struct keyval_t *)kv, &byte, &byte_len) == 0) {
 		/* TODO: encode FAILED! */
 		BUNDLE_EXCEPTION_PRINT("bundle: FAILED to encode keyval: %s\n",
@@ -806,8 +806,8 @@ int bundle_free_exported_argv(int argc, char ***argv)
 	if (!*argv || argc < 2)
 		return BUNDLE_ERROR_INVALID_PARAMETER;
 
-	for (i = 3; i < argc; i += 2)
-		free((*argv)[i]); /* need to free value from g_base64_encode() */
+	for (i = 2; i < argc; i++)
+		free((*argv)[i]);
 	free(*argv);
 	*argv = NULL;
 
