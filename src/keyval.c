@@ -117,6 +117,7 @@ int keyval_get_data(keyval_t *kv, int *type, void **val, size_t *size)
 	return 0;
 }
 
+/* LCOV_EXCL_START */
 int keyval_compare(keyval_t *kv1, keyval_t *kv2)
 {
 	if (!kv1 || !kv2)
@@ -138,6 +139,7 @@ int keyval_compare(keyval_t *kv1, keyval_t *kv2)
 
 	return 0;
 }
+/* LCOV_EXCL_STOP */
 
 size_t keyval_get_encoded_size(keyval_t *kv)
 {

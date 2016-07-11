@@ -125,6 +125,7 @@ void keyval_array_free(keyval_array_t *kva, int do_free_object)
 		free(kva);
 }
 
+/* LCOV_EXCL_START */
 int keyval_array_compare(keyval_array_t *kva1, keyval_array_t *kva2)
 {
 	keyval_t *kv1;
@@ -156,6 +157,7 @@ int keyval_array_compare(keyval_array_t *kva1, keyval_array_t *kva2)
 
 	return 0;
 }
+/* LCOV_EXCL_STOP */
 
 int keyval_array_copy_array(keyval_array_t *kva, void **array_val,
 		unsigned int array_len, size_t (*measure_val_len)(void *val))

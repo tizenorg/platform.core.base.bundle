@@ -898,19 +898,23 @@ int bundle_get_type(bundle *b, const char *key)
 /*
  * Get length of an array
  */
+/* LCOV_EXCL_START */
 unsigned int bundle_get_array_len(bundle *b, const char *key)
 {
 	return BUNDLE_ERROR_NONE;
 }
+/* LCOV_EXCL_STOP */
 
 /*
  * Get size of an item in byte, of given pointer
  */
+/* LCOV_EXCL_START */
 size_t bundle_get_array_val_size(bundle *b, const char *key,
 		const void *val_ptr)
 {
 	return BUNDLE_ERROR_NONE;
 }
+/* LCOV_EXCL_STOP */
 
 static int bundle_set_array_val(bundle *b, const char *key, const int type,
 		const unsigned int idx, const void *val, const size_t size)
@@ -946,12 +950,14 @@ int bundle_add_str_array(bundle *b, const char *key, const char **str_array,
 	return _bundle_add_kv(b, key, str_array, 0, BUNDLE_TYPE_STR_ARRAY, len);
 }
 
+/* LCOV_EXCL_START */
 int bundle_get_val_array(bundle *b, const char *key, char ***str_array,
 		int *len)
 {
 	return _bundle_get_val(b, key, BUNDLE_TYPE_STR_ARRAY,
 			(void **)str_array, NULL, (unsigned int *)len, NULL);
 }
+/* LCOV_EXCL_STOP */
 
 const char **bundle_get_str_array(bundle *b, const char *key, int *len)
 {
@@ -964,6 +970,7 @@ const char **bundle_get_str_array(bundle *b, const char *key, int *len)
 	return arr_val;
 }
 
+/* LCOV_EXCL_START */
 int bundle_compare(bundle *b1, bundle *b2)
 {
 	keyval_t *kv1;
@@ -985,6 +992,7 @@ int bundle_compare(bundle *b1, bundle *b2)
 
 	return 0;
 }
+/* LCOV_EXCL_STOP */
 
 int bundle_set_str_array_element(bundle *b, const char *key,
 		const unsigned int idx, const char *val)
